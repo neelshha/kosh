@@ -12,7 +12,7 @@ venv/
 # Secret keys and user attributes
 data/aes.key
 data/policies.json
-data/users.json
+
 
 # Encrypted files and private keys
 uploads/
