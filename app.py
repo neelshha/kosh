@@ -1,4 +1,5 @@
 from flask import Flask, request, send_file, render_template, redirect, url_for, session, jsonify
+import socket
 from flask_cors import CORS
 from crypto import aes, abe_simulator as abe
 import os, json
@@ -50,7 +51,16 @@ def dashboard():
 
     user_files = [fname for fname, policy in policies.items() if abe.check_access(session['user_id'], policy)]
 
-    return render_template('dashboard.html', user_id=user_id, files=user_files)
+    # Get local IP address
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        server_ip = s.getsockname()[0]
+        s.close()
+    except Exception:
+        server_ip = "localhost"
+
+    return render_template('dashboard.html', user_id=user_id, files=user_files, server_ip=server_ip)
 
 @app.route('/upload', methods=['POST'])
 def upload():
