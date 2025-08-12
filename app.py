@@ -1,4 +1,7 @@
-from flask import Flask, request, send_file, render_template, redirect, url_for, session, jsonify
+from flask import Flask, request, send_file, render_template, redirect, url_for, session, jsonify, flash
+"""
+Admin User and Policy Management Routes (moved below app initialization)
+"""
 import socket
 from flask_cors import CORS
 from crypto import aes, abe_simulator as abe
@@ -109,6 +112,110 @@ def download(filename):
 def logout():
     session.clear()
     return redirect(url_for('home'))
+
+@app.route('/admin')
+def admin_dashboard():
+    # Only allow access if user is 'admin' (simple check, can be improved)
+    if session.get('user_id') != 'admin':
+        return redirect(url_for('home'))
+    with open(USERS_FILE) as f:
+        users = json.load(f)
+    with open(POLICIES_FILE) as f:
+        policies = json.load(f)
+    return render_template('admin.html', users=users, policies=policies)
+
+# --- Admin User Management Routes ---
+@app.route('/admin/add_user', methods=['GET', 'POST'])
+def admin_add_user():
+    if session.get('user_id') != 'admin':
+        return redirect(url_for('home'))
+    if request.method == 'POST':
+        user_id = request.form.get('user_id')
+        attributes = request.form.get('attributes', '').split(',')
+        attributes = [a.strip() for a in attributes if a.strip()]
+        with open(USERS_FILE) as f:
+            users = json.load(f)
+        users[user_id] = attributes
+        with open(USERS_FILE, 'w') as f:
+            json.dump(users, f, indent=2)
+        return redirect(url_for('admin_dashboard'))
+    return render_template('admin_add_user.html')
+
+@app.route('/admin/edit_user/<user_id>', methods=['GET', 'POST'])
+def admin_edit_user(user_id):
+    if session.get('user_id') != 'admin':
+        return redirect(url_for('home'))
+    with open(USERS_FILE) as f:
+        users = json.load(f)
+    if request.method == 'POST':
+        attributes = request.form.get('attributes', '').split(',')
+        attributes = [a.strip() for a in attributes if a.strip()]
+        users[user_id] = attributes
+        with open(USERS_FILE, 'w') as f:
+            json.dump(users, f, indent=2)
+        return redirect(url_for('admin_dashboard'))
+    attrs = ','.join(users.get(user_id, []))
+    return render_template('admin_edit_user.html', user_id=user_id, attributes=attrs)
+
+@app.route('/admin/delete_user/<user_id>')
+def admin_delete_user(user_id):
+    if session.get('user_id') != 'admin':
+        return redirect(url_for('home'))
+    with open(USERS_FILE) as f:
+        users = json.load(f)
+    users.pop(user_id, None)
+    with open(USERS_FILE, 'w') as f:
+        json.dump(users, f, indent=2)
+    return redirect(url_for('admin_dashboard'))
+
+# --- Admin Policy Management Routes ---
+@app.route('/admin/add_policy', methods=['GET', 'POST'])
+def admin_add_policy():
+    if session.get('user_id') != 'admin':
+        return redirect(url_for('home'))
+    if request.method == 'POST':
+        file = request.form.get('file')
+        policy = request.form.get('policy')
+        key = request.form.get('key', '')
+        with open(POLICIES_FILE) as f:
+            policies = json.load(f)
+        policies[file] = {"policy": policy}
+        if key:
+            policies[file]["key"] = key
+        with open(POLICIES_FILE, 'w') as f:
+            json.dump(policies, f, indent=2)
+        return redirect(url_for('admin_dashboard'))
+    return render_template('admin_add_policy.html')
+
+@app.route('/admin/edit_policy/<file>', methods=['GET', 'POST'])
+def admin_edit_policy(file):
+    if session.get('user_id') != 'admin':
+        return redirect(url_for('home'))
+    with open(POLICIES_FILE) as f:
+        policies = json.load(f)
+    if request.method == 'POST':
+        policy = request.form.get('policy')
+        key = request.form.get('key', '')
+        policies[file] = {"policy": policy}
+        if key:
+            policies[file]["key"] = key
+        with open(POLICIES_FILE, 'w') as f:
+            json.dump(policies, f, indent=2)
+        return redirect(url_for('admin_dashboard'))
+    policy_val = policies.get(file, {}).get('policy', '')
+    key_val = policies.get(file, {}).get('key', '')
+    return render_template('admin_edit_policy.html', file=file, policy=policy_val, key=key_val)
+
+@app.route('/admin/delete_policy/<file>')
+def admin_delete_policy(file):
+    if session.get('user_id') != 'admin':
+        return redirect(url_for('home'))
+    with open(POLICIES_FILE) as f:
+        policies = json.load(f)
+    policies.pop(file, None)
+    with open(POLICIES_FILE, 'w') as f:
+        json.dump(policies, f, indent=2)
+    return redirect(url_for('admin_dashboard'))
 
 if __name__ == '__main__':
     app.run(debug=True, port=7130, host="0.0.0.0")
