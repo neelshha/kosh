@@ -209,10 +209,10 @@
                                 name="policy" 
                                 id="policy"
                                 required 
-                                placeholder="e.g., student AND year3"
+                                placeholder="e.g., student,year3,batch1"
                                 class="w-full px-4 py-3 bg-notion-input border border-notion-border rounded-lg text-notion-text placeholder-notion-text-secondary focus:outline-none focus:border-notion-accent transition-colors"
                             >
-                            <p class="text-xs text-notion-text-secondary mt-2">Define who can access this file using logical operators (AND, OR)</p>
+                            <p class="text-xs text-notion-text-secondary mt-2">Type comma-separated attributes (e.g., student,year3,batch1)</p>
                         </div>
 
                         <!-- Progress Bar -->
@@ -220,9 +220,10 @@
                             <div class="w-full bg-notion-border rounded-lg h-3 mb-2">
                                 <div id="progress-bar" class="bg-notion-accent h-3 rounded-lg transition-all duration-200" style="width:0%"></div>
                             </div>
-                            <div class="flex justify-between text-xs text-notion-text-secondary">
+                            <div class="flex justify-between items-center text-xs text-notion-text-secondary">
                                 <span id="progress-percent">0%</span>
                                 <span id="progress-time">Estimating...</span>
+                                <button type="button" id="cancel-upload" class="ml-4 btn-secondary px-2 py-1 rounded text-xs font-medium">Cancel</button>
                             </div>
                         </div>
 
@@ -348,7 +349,8 @@
             }
         });
 
-        // AJAX upload with progress bar and estimated time
+        // AJAX upload with progress bar, estimated time, and cancel button
+        let currentXhr = null;
         document.getElementById('upload-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const fileInput = document.getElementById('file-input');
@@ -361,6 +363,7 @@
             formData.append('policy', policy);
 
             const xhr = new XMLHttpRequest();
+            currentXhr = xhr;
             xhr.open('POST', '/upload', true);
 
             const progressContainer = document.getElementById('progress-container');
@@ -402,6 +405,16 @@
             };
 
             xhr.send(formData);
+        });
+
+        document.getElementById('cancel-upload').addEventListener('click', function() {
+            if (currentXhr) {
+                currentXhr.abort();
+                document.getElementById('progress-time').textContent = 'Upload cancelled.';
+                setTimeout(() => {
+                    document.getElementById('progress-container').style.display = 'none';
+                }, 1200);
+            }
         });
     </script>
         <style>
