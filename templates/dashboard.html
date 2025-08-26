@@ -300,10 +300,27 @@
     </main>
 
     <script>
-        // File input feedback
+        // File input feedback with file size and filename truncation
         document.getElementById('file-input').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name;
-            if (fileName) {
+            const file = e.target.files[0];
+            if (file) {
+                // Format file size
+                let size = file.size;
+                let units = ['B', 'KB', 'MB', 'GB', 'TB'];
+                let i = 0;
+                while (size >= 1024 && i < units.length - 1) {
+                    size /= 1024;
+                    i++;
+                }
+                const fileSizeStr = `Size: ${size.toFixed(2)} ${units[i]}`;
+
+                // Truncate filename if too long
+                let displayName = file.name;
+                const maxLen = 40;
+                if (displayName.length > maxLen) {
+                    displayName = displayName.substring(0, 18) + '...' + displayName.substring(displayName.length - 18);
+                }
+
                 const label = document.querySelector('label[for="file-input"]');
                 label.innerHTML = `
                     <div class="mb-4">
@@ -311,11 +328,24 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
                     </div>
-                    <div class="text-notion-accent mb-2 font-medium">${fileName}</div>
+                    <div class="text-notion-accent mb-2 font-medium filename" title="${file.name}" style="max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">
+                        ${displayName}
+                    </div>
+                    <div class="text-notion-text-secondary text-xs mb-1">${fileSizeStr}</div>
                     <div class="text-notion-text-secondary text-sm">File selected • Ready to upload</div>
                 `;
             }
         });
     </script>
+        <style>
+        .filename {
+            max-width: 260px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: inline-block;
+            vertical-align: bottom;
+        }
+    </style>
 </body>
 </html>
