@@ -293,6 +293,20 @@
 <!-- Modals for Add/Edit User, Policy, Bulk Actions, Preview, etc. -->
 <div id="modal-root"></div>
 <script>
+// Utility: Show modal
+function showModal(html) {
+    const root = document.getElementById('modal-root');
+    root.innerHTML = `<div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div class="bg-notion-card p-6 rounded-xl shadow-xl min-w-[320px] max-w-lg relative animate-fade-in">
+            <button onclick="closeModal()" class="absolute top-2 right-2 text-notion-text-secondary">&times;</button>
+            ${html}
+        </div>
+    </div>`;
+}
+function closeModal() {
+    document.getElementById('modal-root').innerHTML = '';
+}
+
 // User search/filter
 function filterUsers() {
     const input = document.getElementById('user-search').value.toLowerCase();
@@ -307,25 +321,90 @@ function toggleAllUsers(source) {
     document.querySelectorAll('input[name="user_bulk"]').forEach(cb => cb.checked = source.checked);
 }
 function bulkDeleteUsers() {
-    // Implement bulk delete logic (AJAX or form submit)
-    alert('Bulk delete users (not implemented)');
+    const selected = Array.from(document.querySelectorAll('input[name="user_bulk"]:checked')).map(cb => cb.value);
+    if (!selected.length) return alert('Select users to delete.');
+    if (!confirm('Delete selected users?')) return;
+    fetch('/admin/bulk_delete_users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ users: selected })
+    }).then(r => r.json()).then(res => {
+        if (res.success) selected.forEach(u => {
+            const row = document.querySelector(`#users-table input[value="${u}"]`).closest('tr');
+            row.remove();
+        });
+        else alert('Error deleting users');
+    });
 }
 function openBulkAttrModal() {
-    // Show modal for bulk attribute assignment
-    alert('Bulk set attributes (not implemented)');
+    showModal(`<h3 class='text-lg font-bold mb-2'>Bulk Set Attributes</h3>
+        <form id='bulk-attr-form'>
+            <input type='text' name='attrs' placeholder='Comma separated attributes' class='w-full mb-3 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text'>
+            <button type='submit' class='btn-primary px-4 py-2 rounded text-white'>Set Attributes</button>
+        </form>`);
+    document.getElementById('bulk-attr-form').onsubmit = function(e) {
+        e.preventDefault();
+        const attrs = this.attrs.value;
+        const selected = Array.from(document.querySelectorAll('input[name="user_bulk"]:checked')).map(cb => cb.value);
+        fetch('/admin/bulk_set_attrs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ users: selected, attrs })
+        }).then(r => r.json()).then(res => {
+            if (res.success) window.location.reload();
+            else alert('Error setting attributes');
+        });
+    };
 }
 function openUserModal() {
-    // Show modal for add user
-    alert('Add user modal (not implemented)');
+    showModal(`<h3 class='text-lg font-bold mb-2'>Add User</h3>
+        <form id='add-user-form'>
+            <input type='text' name='user' placeholder='Username' required class='w-full mb-3 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text'>
+            <input type='text' name='attrs' placeholder='Comma separated attributes' required class='w-full mb-3 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text'>
+            <button type='submit' class='btn-primary px-4 py-2 rounded text-white'>Add</button>
+        </form>`);
+    document.getElementById('add-user-form').onsubmit = function(e) {
+        e.preventDefault();
+        fetch('/admin/add_user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user: this.user.value, attrs: this.attrs.value })
+        }).then(r => r.json()).then(res => {
+            if (res.success) window.location.reload();
+            else alert('Error adding user');
+        });
+    };
 }
 function openEditUserModal(user, attrs) {
-    // Show modal for edit user
-    alert('Edit user: ' + user + ' (' + attrs + ') (not implemented)');
+    showModal(`<h3 class='text-lg font-bold mb-2'>Edit User</h3>
+        <form id='edit-user-form'>
+            <input type='text' name='user' value='${user}' readonly class='w-full mb-3 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text'>
+            <input type='text' name='attrs' value='${attrs}' required class='w-full mb-3 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text'>
+            <button type='submit' class='btn-primary px-4 py-2 rounded text-white'>Save</button>
+        </form>`);
+    document.getElementById('edit-user-form').onsubmit = function(e) {
+        e.preventDefault();
+        fetch('/admin/edit_user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user: this.user.value, attrs: this.attrs.value })
+        }).then(r => r.json()).then(res => {
+            if (res.success) window.location.reload();
+            else alert('Error editing user');
+        });
+    };
 }
 function forceLogoutUser(user) {
-    // Implement force logout logic
-    alert('Force logout for ' + user + ' (not implemented)');
+    fetch('/admin/force_logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user })
+    }).then(r => r.json()).then(res => {
+        if (res.success) alert('User logged out');
+        else alert('Error');
+    });
 }
+
 // Policy search/filter
 function filterPolicies() {
     const input = document.getElementById('policy-search').value.toLowerCase();
@@ -340,16 +419,60 @@ function toggleAllPolicies(source) {
     document.querySelectorAll('input[name="policy_bulk"]').forEach(cb => cb.checked = source.checked);
 }
 function bulkDeletePolicies() {
-    // Implement bulk delete logic (AJAX or form submit)
-    alert('Bulk delete policies (not implemented)');
+    const selected = Array.from(document.querySelectorAll('input[name="policy_bulk"]:checked')).map(cb => cb.value);
+    if (!selected.length) return alert('Select policies to delete.');
+    if (!confirm('Delete selected policies?')) return;
+    fetch('/admin/bulk_delete_policies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: selected })
+    }).then(r => r.json()).then(res => {
+        if (res.success) selected.forEach(f => {
+            const row = document.querySelector(`#policies-table input[value="${f}"]`).closest('tr');
+            row.remove();
+        });
+        else alert('Error deleting policies');
+    });
 }
 function openPolicyModal() {
-    // Show modal for add policy
-    alert('Add policy modal (not implemented)');
+    showModal(`<h3 class='text-lg font-bold mb-2'>Add Policy</h3>
+        <form id='add-policy-form'>
+            <input type='text' name='file' placeholder='File name' required class='w-full mb-3 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text'>
+            <input type='text' name='policy' placeholder='Comma separated attributes' required class='w-full mb-3 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text'>
+            <input type='text' name='key' placeholder='Key' required class='w-full mb-3 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text'>
+            <button type='submit' class='btn-primary px-4 py-2 rounded text-white'>Add</button>
+        </form>`);
+    document.getElementById('add-policy-form').onsubmit = function(e) {
+        e.preventDefault();
+        fetch('/admin/add_policy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ file: this.file.value, policy: this.policy.value, key: this.key.value })
+        }).then(r => r.json()).then(res => {
+            if (res.success) window.location.reload();
+            else alert('Error adding policy');
+        });
+    };
 }
 function openEditPolicyModal(file, policy, key) {
-    // Show modal for edit policy
-    alert('Edit policy: ' + file + ' (not implemented)');
+    showModal(`<h3 class='text-lg font-bold mb-2'>Edit Policy</h3>
+        <form id='edit-policy-form'>
+            <input type='text' name='file' value='${file}' readonly class='w-full mb-3 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text'>
+            <input type='text' name='policy' value='${policy}' required class='w-full mb-3 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text'>
+            <input type='text' name='key' value='${key}' required class='w-full mb-3 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text'>
+            <button type='submit' class='btn-primary px-4 py-2 rounded text-white'>Save</button>
+        </form>`);
+    document.getElementById('edit-policy-form').onsubmit = function(e) {
+        e.preventDefault();
+        fetch('/admin/edit_policy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ file: this.file.value, policy: this.policy.value, key: this.key.value })
+        }).then(r => r.json()).then(res => {
+            if (res.success) window.location.reload();
+            else alert('Error editing policy');
+        });
+    };
 }
 
 // Attach event listeners for edit policy links (after DOM loaded)
@@ -365,20 +488,38 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 function previewPolicyAccess(file) {
-    // Show modal with users who match this policy
-    alert('Preview access for: ' + file + ' (not implemented)');
+    showModal(`<h3 class='text-lg font-bold mb-2'>Preview Access</h3><div>Users who match policy for <b>${file}</b> (not implemented)</div>`);
 }
 function deleteFile(filename) {
-    // Implement file delete logic
-    alert('Delete file: ' + filename + ' (not implemented)');
+    fetch('/admin/delete_file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename })
+    }).then(r => r.json()).then(res => {
+        if (res.success) window.location.reload();
+        else alert('Error deleting file');
+    });
 }
 function addAttribute() {
-    // Implement add attribute logic
-    alert('Add attribute (not implemented)');
+    const attr = document.getElementById('new-attr').value;
+    fetch('/admin/add_attribute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ attr })
+    }).then(r => r.json()).then(res => {
+        if (res.success) window.location.reload();
+        else alert('Error adding attribute');
+    });
 }
 function removeAttribute(attr) {
-    // Implement remove attribute logic
-    alert('Remove attribute: ' + attr + ' (not implemented)');
+    fetch('/admin/remove_attribute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ attr })
+    }).then(r => r.json()).then(res => {
+        if (res.success) window.location.reload();
+        else alert('Error removing attribute');
+    });
 }
 </script>
 </body>
