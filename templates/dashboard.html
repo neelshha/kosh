@@ -187,7 +187,7 @@
                     </div>
 
                     <div class="p-6 flex-1">
-                        <form action="/upload" method="POST" enctype="multipart/form-data" class="space-y-6">
+                        <form id="upload-form" class="space-y-6">
                         <!-- File Upload Area -->
                         <div class="upload-zone rounded-xl p-8 text-center">
                             <input type="file" name="file" required id="file-input" class="hidden">
@@ -215,9 +215,20 @@
                             <p class="text-xs text-notion-text-secondary mt-2">Define who can access this file using logical operators (AND, OR)</p>
                         </div>
 
+                        <!-- Progress Bar -->
+                        <div id="progress-container" class="w-full pt-2" style="display:none;">
+                            <div class="w-full bg-notion-border rounded-lg h-3 mb-2">
+                                <div id="progress-bar" class="bg-notion-accent h-3 rounded-lg transition-all duration-200" style="width:0%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-notion-text-secondary">
+                                <span id="progress-percent">0%</span>
+                                <span id="progress-time">Estimating...</span>
+                            </div>
+                        </div>
+
                         <!-- Submit Button -->
                         <div class="flex justify-end pt-4">
-                            <button type="submit" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2">
+                            <button type="submit" id="upload-btn" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                                 </svg>
@@ -335,6 +346,62 @@
                     <div class="text-notion-text-secondary text-sm">File selected • Ready to upload</div>
                 `;
             }
+        });
+
+        // AJAX upload with progress bar and estimated time
+        document.getElementById('upload-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('file-input');
+            const policyInput = document.getElementById('policy');
+            const file = fileInput.files[0];
+            if (!file) return;
+            const policy = policyInput.value;
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('policy', policy);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/upload', true);
+
+            const progressContainer = document.getElementById('progress-container');
+            const progressBar = document.getElementById('progress-bar');
+            const progressPercent = document.getElementById('progress-percent');
+            const progressTime = document.getElementById('progress-time');
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+            progressPercent.textContent = '0%';
+            progressTime.textContent = 'Estimating...';
+
+            let startTime = null;
+            xhr.upload.addEventListener('progress', function(evt) {
+                if (!startTime) startTime = Date.now();
+                if (evt.lengthComputable) {
+                    const percent = Math.round((evt.loaded / evt.total) * 100);
+                    progressBar.style.width = percent + '%';
+                    progressPercent.textContent = percent + '%';
+                    const elapsed = (Date.now() - startTime) / 1000;
+                    const speed = evt.loaded / elapsed;
+                    const remaining = evt.total - evt.loaded;
+                    const eta = speed > 0 ? (remaining / speed) : 0;
+                    progressTime.textContent = eta > 1 ? `~${Math.ceil(eta)}s left` : 'Almost done';
+                }
+            });
+
+            xhr.onload = function() {
+                progressBar.style.width = '100%';
+                progressPercent.textContent = '100%';
+                progressTime.textContent = 'Upload complete!';
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    window.location.reload();
+                }, 1200);
+            };
+
+            xhr.onerror = function() {
+                progressTime.textContent = 'Upload failed.';
+            };
+
+            xhr.send(formData);
         });
     </script>
         <style>
