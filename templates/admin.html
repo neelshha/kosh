@@ -93,23 +93,30 @@
             <h2 class="text-3xl font-bold text-notion-text mb-2 font-title">Admin Dashboard</h2>
             <p class="text-notion-text-secondary text-lg font-content">Manage all users, attributes, and file policies on the network.</p>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Users Section -->
             <section>
                 <div class="bg-notion-card border border-notion-border rounded-xl notion-shadow animate-scale-in h-full">
                     <div class="p-6 border-b border-notion-border flex items-center justify-between">
-                        <h3 class="text-xl font-semibold text-notion-text font-title">Users & Attributes</h3>
-                        <button onclick="location.href='/admin/add_user'" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2">
+                        <h3 class="text-xl font-semibold text-notion-text font-title">Users & Attributes
+                            <span title="Manage users and their attributes" class="ml-2 text-notion-accent cursor-help">&#9432;</span>
+                        </h3>
+                        <button onclick="openUserModal()" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>
                             <span>Add User</span>
                         </button>
                     </div>
+                    <div class="p-4">
+                        <input type="text" id="user-search" placeholder="Search users..." class="w-full px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text mb-2" onkeyup="filterUsers()">
+                    </div>
                     <div class="p-6 flex-1 overflow-x-auto">
-                        <table class="min-w-full divide-y divide-notion-border">
+                        <form id="user-bulk-form">
+                        <table class="min-w-full divide-y divide-notion-border" id="users-table">
                             <thead>
                                 <tr>
+                                    <th class="px-2"><input type="checkbox" onclick="toggleAllUsers(this)"></th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">User</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Attributes</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Actions</th>
@@ -118,17 +125,25 @@
                             <tbody class="divide-y divide-notion-border">
                                 {% for user, attrs in users.items() %}
                                 <tr>
+                                    <td class="px-2"><input type="checkbox" name="user_bulk" value="{{ user }}"></td>
                                     <td class="px-4 py-2 font-medium">{{ user }}</td>
                                     <td class="px-4 py-2">{{ attrs|join(', ') }}</td>
                                     <td class="px-4 py-2">
-                                        <a href="/admin/edit_user/{{ user }}" class="text-notion-accent hover:underline">Edit</a>
-                                        <span class="mx-2 text-notion-text-secondary">|</span>
-                                        <a href="/admin/delete_user/{{ user }}" class="text-red-500 hover:underline" onclick="return confirm('Delete user?')">Delete</a>
+                                        <div class="flex flex-col items-start space-y-1">
+                                            <a href="#" onclick="openEditUserModal('{{ user }}', '{{ attrs|join(', ') }}')" class="text-notion-accent hover:underline">Edit</a>
+                                            <a href="/admin/delete_user/{{ user }}" class="text-red-500 hover:underline" onclick="return confirm('Delete user?')">Delete</a>
+                                            <a href="#" onclick="forceLogoutUser('{{ user }}')" class="text-yellow-400 hover:underline" title="Force logout">Logout</a>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
+                        <div class="mt-2 flex space-x-2">
+                            <button type="button" class="btn-secondary px-3 py-1 rounded text-sm" onclick="bulkDeleteUsers()">Bulk Delete</button>
+                            <button type="button" class="btn-secondary px-3 py-1 rounded text-sm" onclick="openBulkAttrModal()">Bulk Set Attributes</button>
+                        </div>
+                        </form>
                     </div>
                 </div>
             </section>
@@ -136,18 +151,25 @@
             <section>
                 <div class="bg-notion-card border border-notion-border rounded-xl notion-shadow animate-scale-in h-full">
                     <div class="p-6 border-b border-notion-border flex items-center justify-between">
-                        <h3 class="text-xl font-semibold text-notion-text font-title">File Policies</h3>
-                        <button onclick="location.href='/admin/add_policy'" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2">
+                        <h3 class="text-xl font-semibold text-notion-text font-title">File Policies
+                            <span title="Manage file access policies" class="ml-2 text-notion-accent cursor-help">&#9432;</span>
+                        </h3>
+                        <button onclick="openPolicyModal()" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>
                             <span>Add Policy</span>
                         </button>
                     </div>
+                    <div class="p-4">
+                        <input type="text" id="policy-search" placeholder="Search policies..." class="w-full px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text mb-2" onkeyup="filterPolicies()">
+                    </div>
                     <div class="p-6 flex-1 overflow-x-auto">
-                        <table class="min-w-full divide-y divide-notion-border">
+                        <form id="policy-bulk-form">
+                        <table class="min-w-full divide-y divide-notion-border" id="policies-table">
                             <thead>
                                 <tr>
+                                    <th class="px-2"><input type="checkbox" onclick="toggleAllPolicies(this)"></th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">File</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Policy</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Key</th>
@@ -157,13 +179,64 @@
                             <tbody class="divide-y divide-notion-border">
                                 {% for file, policy_obj in policies.items() %}
                                 <tr>
+                                    <td class="px-2"><input type="checkbox" name="policy_bulk" value="{{ file }}"></td>
                                     <td class="px-4 py-2 font-medium">{{ file }}</td>
                                     <td class="px-4 py-2">{{ policy_obj.policy if policy_obj.policy else '' }}</td>
                                     <td class="px-4 py-2">{{ policy_obj.key if policy_obj.key else '' }}</td>
                                     <td class="px-4 py-2">
-                                        <a href="/admin/edit_policy/{{ file }}" class="text-notion-accent hover:underline">Edit</a>
-                                        <span class="mx-2 text-notion-text-secondary">|</span>
-                                        <a href="/admin/delete_policy/{{ file }}" class="text-red-500 hover:underline" onclick="return confirm('Delete policy?')">Delete</a>
+                                        <div class="flex flex-col items-start space-y-1">
+                                            <a href="#" class="text-notion-accent hover:underline edit-policy-link" 
+                                               data-file="{{ file }}" 
+                                               data-policy="{{ policy_obj.policy or '' }}" 
+                                               data-key="{{ policy_obj.key or '' }}">
+                                               Edit
+                                            </a>
+                                            <a href="/admin/delete_policy/{{ file }}" class="text-red-500 hover:underline" onclick="return confirm('Delete policy?')">Delete</a>
+                                            <a href="#" onclick="previewPolicyAccess('{{ file }}')" class="text-green-400 hover:underline" title="Preview access">Preview</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="mt-2 flex space-x-2">
+                            <button type="button" class="btn-secondary px-3 py-1 rounded text-sm" onclick="bulkDeletePolicies()">Bulk Delete</button>
+                        </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+            <!-- File Management Section -->
+            <section>
+                <div class="bg-notion-card border border-notion-border rounded-xl notion-shadow animate-scale-in h-full">
+                    <div class="p-6 border-b border-notion-border flex items-center justify-between">
+                        <h3 class="text-xl font-semibold text-notion-text font-title">Files
+                            <span title="Manage uploaded files" class="ml-2 text-notion-accent cursor-help">&#9432;</span>
+                        </h3>
+                    </div>
+                    <div class="p-6 flex-1 overflow-x-auto">
+                        <table class="min-w-full divide-y divide-notion-border">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">File Name</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Size</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Owner</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Upload Date</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-notion-border">
+                                {% for file in all_files %}
+                                <tr>
+                                    <td class="px-4 py-2 font-medium">{{ file.name }}</td>
+                                    <td class="px-4 py-2">{{ file.size }}</td>
+                                    <td class="px-4 py-2">{{ file.owner }}</td>
+                                    <td class="px-4 py-2">{{ file.upload_date }}</td>
+                                    <td class="px-4 py-2">
+                                        <div class="flex flex-col items-start space-y-1">
+                                            <a href="/download/{{ file.name }}" class="text-notion-accent hover:underline">Download</a>
+                                            <a href="#" onclick="deleteFile('{{ file.name }}')" class="text-red-500 hover:underline">Delete</a>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -173,12 +246,140 @@
                 </div>
             </section>
         </div>
-        <div class="mt-12">
+        <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Audit Logs -->
             <div class="bg-notion-card border border-notion-border rounded-xl notion-shadow p-6">
-                <h4 class="text-lg font-semibold text-notion-text font-title mb-2">Other Controls</h4>
-                <p class="text-notion-text-secondary text-sm">More admin features coming soon.</p>
+                <h4 class="text-lg font-semibold text-notion-text font-title mb-2">Audit Logs</h4>
+                <div class="overflow-x-auto max-h-64">
+                    <table class="min-w-full divide-y divide-notion-border">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Time</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">User</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Action</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-notion-border">
+                            {% for log in audit_logs %}
+                            <tr>
+                                <td class="px-4 py-2">{{ log.time }}</td>
+                                <td class="px-4 py-2">{{ log.user }}</td>
+                                <td class="px-4 py-2">{{ log.action }}</td>
+                                <td class="px-4 py-2">{{ log.details }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Attribute Management -->
+            <div class="bg-notion-card border border-notion-border rounded-xl notion-shadow p-6">
+                <h4 class="text-lg font-semibold text-notion-text font-title mb-2">Attribute Management</h4>
+                <form id="attr-form" class="flex flex-col space-y-2">
+                    <div class="flex space-x-2">
+                        <input type="text" id="new-attr" placeholder="Add new attribute..." class="flex-1 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text">
+                        <button type="button" class="btn-primary px-3 py-2 rounded text-white" onclick="addAttribute()">Add</button>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mt-2">
+                        {% for attr in all_attributes %}
+                        <span class="bg-notion-accent text-white px-3 py-1 rounded-full flex items-center">{{ attr }} <button type="button" class="ml-2 text-xs" onclick="removeAttribute('{{ attr }}')">&times;</button></span>
+                        {% endfor %}
+                    </div>
+                </form>
             </div>
         </div>
     </main>
+<!-- Modals for Add/Edit User, Policy, Bulk Actions, Preview, etc. -->
+<div id="modal-root"></div>
+<script>
+// User search/filter
+function filterUsers() {
+    const input = document.getElementById('user-search').value.toLowerCase();
+    const rows = document.querySelectorAll('#users-table tbody tr');
+    rows.forEach(row => {
+        const user = row.children[1].textContent.toLowerCase();
+        const attrs = row.children[2].textContent.toLowerCase();
+        row.style.display = (user.includes(input) || attrs.includes(input)) ? '' : 'none';
+    });
+}
+function toggleAllUsers(source) {
+    document.querySelectorAll('input[name="user_bulk"]').forEach(cb => cb.checked = source.checked);
+}
+function bulkDeleteUsers() {
+    // Implement bulk delete logic (AJAX or form submit)
+    alert('Bulk delete users (not implemented)');
+}
+function openBulkAttrModal() {
+    // Show modal for bulk attribute assignment
+    alert('Bulk set attributes (not implemented)');
+}
+function openUserModal() {
+    // Show modal for add user
+    alert('Add user modal (not implemented)');
+}
+function openEditUserModal(user, attrs) {
+    // Show modal for edit user
+    alert('Edit user: ' + user + ' (' + attrs + ') (not implemented)');
+}
+function forceLogoutUser(user) {
+    // Implement force logout logic
+    alert('Force logout for ' + user + ' (not implemented)');
+}
+// Policy search/filter
+function filterPolicies() {
+    const input = document.getElementById('policy-search').value.toLowerCase();
+    const rows = document.querySelectorAll('#policies-table tbody tr');
+    rows.forEach(row => {
+        const file = row.children[1].textContent.toLowerCase();
+        const policy = row.children[2].textContent.toLowerCase();
+        row.style.display = (file.includes(input) || policy.includes(input)) ? '' : 'none';
+    });
+}
+function toggleAllPolicies(source) {
+    document.querySelectorAll('input[name="policy_bulk"]').forEach(cb => cb.checked = source.checked);
+}
+function bulkDeletePolicies() {
+    // Implement bulk delete logic (AJAX or form submit)
+    alert('Bulk delete policies (not implemented)');
+}
+function openPolicyModal() {
+    // Show modal for add policy
+    alert('Add policy modal (not implemented)');
+}
+function openEditPolicyModal(file, policy, key) {
+    // Show modal for edit policy
+    alert('Edit policy: ' + file + ' (not implemented)');
+}
+
+// Attach event listeners for edit policy links (after DOM loaded)
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.edit-policy-link').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const file = this.getAttribute('data-file');
+            const policy = this.getAttribute('data-policy');
+            const key = this.getAttribute('data-key');
+            openEditPolicyModal(file, policy, key);
+        });
+    });
+});
+function previewPolicyAccess(file) {
+    // Show modal with users who match this policy
+    alert('Preview access for: ' + file + ' (not implemented)');
+}
+function deleteFile(filename) {
+    // Implement file delete logic
+    alert('Delete file: ' + filename + ' (not implemented)');
+}
+function addAttribute() {
+    // Implement add attribute logic
+    alert('Add attribute (not implemented)');
+}
+function removeAttribute(attr) {
+    // Implement remove attribute logic
+    alert('Remove attribute: ' + attr + ' (not implemented)');
+}
+</script>
 </body>
 </html>
