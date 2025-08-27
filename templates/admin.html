@@ -56,6 +56,13 @@
         .btn-primary:hover { background: #0066cc; }
         .btn-secondary { background: rgba(255, 255, 255, 0.05); transition: none; }
         .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); }
+        .btn-primary:focus, .btn-secondary:focus {
+            outline: 2px solid #1e90ff;
+            outline-offset: 2px;
+        }
+        tbody tr:nth-child(even) { background-color: #181818; }
+        tbody tr:hover { background-color: #252525; }
+        th { padding-top: 24px !important; padding-bottom: 24px !important; }
     </style>
 </head>
 <body class="bg-notion-bg text-notion-text font-content min-h-screen">
@@ -93,30 +100,51 @@
             <h2 class="text-3xl font-bold text-notion-text mb-2 font-title">Admin Dashboard</h2>
             <p class="text-notion-text-secondary text-lg font-content">Manage all users, attributes, and file policies on the network.</p>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Users Section -->
-            <section>
-                <div class="bg-notion-card border border-notion-border rounded-xl notion-shadow animate-scale-in h-full">
-                    <div class="p-6 border-b border-notion-border flex items-center justify-between">
-                        <h3 class="text-xl font-semibold text-notion-text font-title">Users & Attributes
-                            <span title="Manage users and their attributes" class="ml-2 text-notion-accent cursor-help">&#9432;</span>
-                        </h3>
-                        <button onclick="openUserModal()" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            <span>Add User</span>
-                        </button>
+            <section class="h-full flex flex-col mb-8">
+                <div class="bg-notion-card border border-notion-border rounded-xl notion-shadow animate-scale-in h-full flex flex-col">
+                    <div class="p-6 border-b border-notion-border flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div class="mb-2 md:mb-0">
+                            <h3 class="text-2xl font-semibold text-notion-text font-title flex items-center mb-2">
+                                Users & Attributes
+                                <span title="Manage users and their attributes" class="ml-2 text-notion-accent cursor-help">&#9432;</span>
+                            </h3>
+                            <p class="text-notion-text-secondary text-base mt-1">Add, edit, or remove users and set their attributes.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="openUserModal()" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2" aria-label="Add User">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                <span>Add User</span>
+                            </button>
+                            <button type="button" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2" onclick="bulkDeleteUsers()" aria-label="Bulk Delete">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                                <span>Bulk Delete</span>
+                            </button>
+                            <button type="button" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2" onclick="openBulkAttrModal()" aria-label="Bulk Set Attributes">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                                </svg>
+                                <span>Bulk Set Attributes</span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="p-4">
+                    <div class="p-4 flex items-center space-x-2">
                         <input type="text" id="user-search" placeholder="Search users..." class="w-full px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text mb-2" onkeyup="filterUsers()">
+                        <button type="button" onclick="document.getElementById('user-search').value='';filterUsers();" class="btn-secondary px-2 py-2 rounded text-sm" aria-label="Clear search">
+                            &#10006;
+                        </button>
                     </div>
                     <div class="p-6 flex-1 overflow-x-auto">
                         <form id="user-bulk-form">
                         <table class="min-w-full divide-y divide-notion-border" id="users-table">
                             <thead>
                                 <tr>
-                                    <th class="px-2"><input type="checkbox" onclick="toggleAllUsers(this)"></th>
+                                    <th class="px-2"><input type="checkbox" onclick="toggleAllUsers(this)" aria-label="Select all users"></th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">User</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Attributes</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Actions</th>
@@ -124,36 +152,37 @@
                             </thead>
                             <tbody class="divide-y divide-notion-border">
                                 {% for user, attrs in users.items() %}
-                                <tr>
-                                    <td class="px-2"><input type="checkbox" name="user_bulk" value="{{ user }}"></td>
+                                <tr class="hover:bg-notion-hover transition">
+                                    <td class="px-2"><input type="checkbox" name="user_bulk" value="{{ user }}" aria-label="Select user {{ user }}"></td>
                                     <td class="px-4 py-2 font-medium">{{ user }}</td>
                                     <td class="px-4 py-2">{{ attrs|join(', ') }}</td>
                                     <td class="px-4 py-2">
                                         <div class="flex flex-col items-start space-y-1">
-                                            <a href="#" onclick="openEditUserModal('{{ user }}', '{{ attrs|join(', ') }}')" class="text-notion-accent hover:underline">Edit</a>
-                                            <a href="/admin/delete_user/{{ user }}" class="text-red-500 hover:underline" onclick="return confirm('Delete user?')">Delete</a>
-                                            <a href="#" onclick="forceLogoutUser('{{ user }}')" class="text-yellow-400 hover:underline" title="Force logout">Logout</a>
+                                            <a href="#" onclick="openEditUserModal('{{ user }}', '{{ attrs|join(', ') }}')" class="text-notion-accent hover:underline" aria-label="Edit user {{ user }}">Edit</a>
+                                            <a href="/admin/delete_user/{{ user }}" class="text-red-500 hover:underline" onclick="return confirm('Delete user?')" aria-label="Delete user {{ user }}">Delete</a>
+                                            <a href="#" onclick="forceLogoutUser('{{ user }}')" class="text-yellow-400 hover:underline" title="Force logout" aria-label="Force logout {{ user }}">Logout</a>
                                         </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
-                        <div class="mt-2 flex space-x-2">
-                            <button type="button" class="btn-secondary px-3 py-1 rounded text-sm" onclick="bulkDeleteUsers()">Bulk Delete</button>
-                            <button type="button" class="btn-secondary px-3 py-1 rounded text-sm" onclick="openBulkAttrModal()">Bulk Set Attributes</button>
-                        </div>
+                        <div id="user-no-results" class="text-notion-text-secondary text-center py-4 hidden">No users found.</div>
                         </form>
                     </div>
                 </div>
             </section>
             <!-- Policies Section -->
-            <section>
-                <div class="bg-notion-card border border-notion-border rounded-xl notion-shadow animate-scale-in h-full">
+            <section class="h-full flex flex-col mb-8">
+                <div class="bg-notion-card border border-notion-border rounded-xl notion-shadow animate-scale-in h-full flex flex-col">
                     <div class="p-6 border-b border-notion-border flex items-center justify-between">
-                        <h3 class="text-xl font-semibold text-notion-text font-title">File Policies
-                            <span title="Manage file access policies" class="ml-2 text-notion-accent cursor-help">&#9432;</span>
-                        </h3>
+                        <div>
+                            <h3 class="text-xl font-semibold text-notion-text font-title flex items-center">
+                                File Policies
+                                <span title="Manage file access policies" class="ml-2 text-notion-accent cursor-help">&#9432;</span>
+                            </h3>
+                            <p class="text-notion-text-secondary text-sm mt-1">Set and manage file access policies.</p>
+                        </div>
                         <button onclick="openPolicyModal()" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -161,15 +190,18 @@
                             <span>Add Policy</span>
                         </button>
                     </div>
-                    <div class="p-4">
+                    <div class="p-4 flex items-center space-x-2">
                         <input type="text" id="policy-search" placeholder="Search policies..." class="w-full px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text mb-2" onkeyup="filterPolicies()">
+                        <button type="button" onclick="document.getElementById('policy-search').value='';filterPolicies();" class="btn-secondary px-2 py-2 rounded text-sm" aria-label="Clear search">
+                            &#10006;
+                        </button>
                     </div>
                     <div class="p-6 flex-1 overflow-x-auto">
                         <form id="policy-bulk-form">
                         <table class="min-w-full divide-y divide-notion-border" id="policies-table">
                             <thead>
                                 <tr>
-                                    <th class="px-2"><input type="checkbox" onclick="toggleAllPolicies(this)"></th>
+                                    <th class="px-2"><input type="checkbox" onclick="toggleAllPolicies(this)" aria-label="Select all policies"></th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">File</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Policy</th>
                                     <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Key</th>
@@ -178,8 +210,8 @@
                             </thead>
                             <tbody class="divide-y divide-notion-border">
                                 {% for file, policy_obj in policies.items() %}
-                                <tr>
-                                    <td class="px-2"><input type="checkbox" name="policy_bulk" value="{{ file }}"></td>
+                                <tr class="hover:bg-notion-hover transition">
+                                    <td class="px-2"><input type="checkbox" name="policy_bulk" value="{{ file }}" aria-label="Select policy for {{ file }}"></td>
                                     <td class="px-4 py-2 font-medium">{{ file }}</td>
                                     <td class="px-4 py-2">{{ policy_obj.policy if policy_obj.policy else '' }}</td>
                                     <td class="px-4 py-2">{{ policy_obj.key if policy_obj.key else '' }}</td>
@@ -188,31 +220,34 @@
                                             <a href="#" class="text-notion-accent hover:underline edit-policy-link" 
                                                data-file="{{ file }}" 
                                                data-policy="{{ policy_obj.policy or '' }}" 
-                                               data-key="{{ policy_obj.key or '' }}">
+                                               data-key="{{ policy_obj.key or '' }}"
+                                               aria-label="Edit policy for {{ file }}">
                                                Edit
                                             </a>
-                                            <a href="/admin/delete_policy/{{ file }}" class="text-red-500 hover:underline" onclick="return confirm('Delete policy?')">Delete</a>
-                                            <a href="#" onclick="previewPolicyAccess('{{ file }}')" class="text-green-400 hover:underline" title="Preview access">Preview</a>
+                                            <a href="/admin/delete_policy/{{ file }}" class="text-red-500 hover:underline" onclick="return confirm('Delete policy?')" aria-label="Delete policy for {{ file }}">Delete</a>
+                                            <a href="#" onclick="previewPolicyAccess('{{ file }}')" class="text-green-400 hover:underline" title="Preview access" aria-label="Preview access for {{ file }}">Preview</a>
                                         </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
-                        <div class="mt-2 flex space-x-2">
-                            <button type="button" class="btn-secondary px-3 py-1 rounded text-sm" onclick="bulkDeletePolicies()">Bulk Delete</button>
-                        </div>
+                        <div id="policy-no-results" class="text-notion-text-secondary text-center py-4 hidden">No policies found.</div>
                         </form>
                     </div>
                 </div>
             </section>
             <!-- File Management Section -->
-            <section>
-                <div class="bg-notion-card border border-notion-border rounded-xl notion-shadow animate-scale-in h-full">
+            <section class="h-full flex flex-col mb-8">
+                <div class="bg-notion-card border border-notion-border rounded-xl notion-shadow animate-scale-in h-full flex flex-col">
                     <div class="p-6 border-b border-notion-border flex items-center justify-between">
-                        <h3 class="text-xl font-semibold text-notion-text font-title">Files
-                            <span title="Manage uploaded files" class="ml-2 text-notion-accent cursor-help">&#9432;</span>
-                        </h3>
+                        <div>
+                            <h3 class="text-xl font-semibold text-notion-text font-title flex items-center">
+                                Files
+                                <span title="Manage uploaded files" class="ml-2 text-notion-accent cursor-help">&#9432;</span>
+                            </h3>
+                            <p class="text-notion-text-secondary text-sm mt-1">View and manage uploaded files.</p>
+                        </div>
                     </div>
                     <div class="p-6 flex-1 overflow-x-auto">
                         <table class="min-w-full divide-y divide-notion-border">
@@ -227,21 +262,22 @@
                             </thead>
                             <tbody class="divide-y divide-notion-border">
                                 {% for file in all_files %}
-                                <tr>
+                                <tr class="hover:bg-notion-hover transition">
                                     <td class="px-4 py-2 font-medium">{{ file.name }}</td>
                                     <td class="px-4 py-2">{{ file.size }}</td>
                                     <td class="px-4 py-2">{{ file.owner }}</td>
                                     <td class="px-4 py-2">{{ file.upload_date }}</td>
                                     <td class="px-4 py-2">
                                         <div class="flex flex-col items-start space-y-1">
-                                            <a href="/download/{{ file.name }}" class="text-notion-accent hover:underline">Download</a>
-                                            <a href="#" onclick="deleteFile('{{ file.name }}')" class="text-red-500 hover:underline">Delete</a>
+                                            <a href="/download/{{ file.name }}" class="text-notion-accent hover:underline" aria-label="Download {{ file.name }}">Download</a>
+                                            <a href="#" onclick="deleteFile('{{ file.name }}')" class="text-red-500 hover:underline" aria-label="Delete {{ file.name }}">Delete</a>
                                         </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
+                        <div id="file-no-results" class="text-notion-text-secondary text-center py-4 hidden">No files found.</div>
                     </div>
                 </div>
             </section>
@@ -250,7 +286,7 @@
             <!-- Audit Logs -->
             <div class="bg-notion-card border border-notion-border rounded-xl notion-shadow p-6">
                 <h4 class="text-lg font-semibold text-notion-text font-title mb-2">Audit Logs</h4>
-                <div class="overflow-x-auto max-h-64">
+                <div class="overflow-x-auto max-h-80">
                     <table class="min-w-full divide-y divide-notion-border">
                         <thead>
                             <tr>
@@ -262,7 +298,7 @@
                         </thead>
                         <tbody class="divide-y divide-notion-border">
                             {% for log in audit_logs %}
-                            <tr>
+                            <tr class="hover:bg-notion-hover transition">
                                 <td class="px-4 py-2">{{ log.time }}</td>
                                 <td class="px-4 py-2">{{ log.user }}</td>
                                 <td class="px-4 py-2">{{ log.action }}</td>
@@ -271,6 +307,7 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    <div id="log-no-results" class="text-notion-text-secondary text-center py-4 hidden">No logs found.</div>
                 </div>
             </div>
             <!-- Attribute Management -->
@@ -281,9 +318,17 @@
                         <input type="text" id="new-attr" placeholder="Add new attribute..." class="flex-1 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text">
                         <button type="button" class="btn-primary px-3 py-2 rounded text-white" onclick="addAttribute()">Add</button>
                     </div>
-                    <div class="flex flex-wrap gap-2 mt-2">
+                    <div class="flex flex-wrap gap-3 mt-2">
                         {% for attr in all_attributes %}
-                        <span class="bg-notion-accent text-white px-3 py-1 rounded-full flex items-center">{{ attr }} <button type="button" class="ml-2 text-xs" onclick="removeAttribute('{{ attr }}')">&times;</button></span>
+                        <span class="bg-notion-accent text-white px-4 py-2 rounded-full flex items-center shadow-sm transition-all duration-150 hover:bg-notion-accent-hover">
+                            <span class="mr-2">{{ attr }}</span>
+                            <button type="button"
+                                class="ml-1 px-2 py-1 rounded-full bg-notion-card text-notion-text-secondary hover:bg-notion-hover hover:text-white transition"
+                                onclick="removeAttribute('{{ attr }}')"
+                                aria-label="Remove attribute {{ attr }}">
+                                &times;
+                            </button>
+                        </span>
                         {% endfor %}
                     </div>
                 </form>
@@ -296,15 +341,17 @@
 // Utility: Show modal
 function showModal(html) {
     const root = document.getElementById('modal-root');
-    root.innerHTML = `<div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-        <div class="bg-notion-card p-6 rounded-xl shadow-xl min-w-[320px] max-w-lg relative animate-fade-in">
+    root.innerHTML = `<div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50" onclick="closeModal(event)">
+        <div class="bg-notion-card p-6 rounded-xl shadow-xl min-w-[320px] max-w-lg relative animate-fade-in" onclick="event.stopPropagation();">
             <button onclick="closeModal()" class="absolute top-2 right-2 text-notion-text-secondary">&times;</button>
             ${html}
         </div>
     </div>`;
 }
-function closeModal() {
-    document.getElementById('modal-root').innerHTML = '';
+function closeModal(e) {
+    if (!e || e.target === e.currentTarget) {
+        document.getElementById('modal-root').innerHTML = '';
+    }
 }
 
 // User search/filter
