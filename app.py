@@ -90,7 +90,7 @@ def upload():
     with open(POLICIES_FILE, 'w') as f:
         json.dump(policies, f)
 
-    return redirect(url_for('dashboard'))
+    return jsonify(success=True, filename=filename)
 
 @app.route('/download/<filename>')
 def download(filename):

@@ -396,7 +396,10 @@
                 progressTime.textContent = 'Upload complete!';
                 setTimeout(() => {
                     progressContainer.style.display = 'none';
-                    window.location.reload();
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        window.location.reload();
+                    }
                 }, 1200);
             };
 
