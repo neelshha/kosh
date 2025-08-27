@@ -15,7 +15,7 @@ def check_access(user_id, policy):
     if isinstance(policy, list):
         required = policy
     elif isinstance(policy, str):
-        required = [p.strip() for p in policy.split('AND')]
+        required = [p.strip() for p in policy.split(',')]
     else:
         return False
 

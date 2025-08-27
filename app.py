@@ -78,12 +78,11 @@ def upload():
     elif isinstance(policy, list):
         policy = ' AND '.join(policy)
 
-    raw = file.read()
-    encrypted = aes.encrypt(raw)
-
     filename = file.filename + '.enc'
-    with open(os.path.join(UPLOAD_FOLDER, filename), 'wb') as f:
-        f.write(encrypted)
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    
+    with open(filepath, 'wb') as f_out:
+        aes.encrypt(file.stream, f_out)
 
     with open(POLICIES_FILE) as f:
         policies = json.load(f)
@@ -103,10 +102,21 @@ def download(filename):
     if not policy or not abe.check_access(session['user_id'], policy):
         return "Access Denied", 403
 
-    with open(os.path.join(UPLOAD_FOLDER, filename), 'rb') as f:
-        encrypted = f.read()
-    decrypted = aes.decrypt(encrypted)
-    return send_file(BytesIO(decrypted), download_name=filename.replace(".enc", ""), as_attachment=True)
+    encrypted_path = os.path.join(UPLOAD_FOLDER, filename)
+    decrypted_stream = BytesIO()
+    
+    try:
+        with open(encrypted_path, 'rb') as f_in:
+            aes.decrypt(f_in, decrypted_stream)
+    except FileNotFoundError:
+        return "File not found", 404
+    except ValueError as e:
+        # This will catch HMAC verification errors
+        print(f"Decryption or verification failed for {filename}: {e}")
+        return "Access Denied: File is corrupt or has been tampered with.", 403
+
+    decrypted_stream.seek(0)
+    return send_file(decrypted_stream, download_name=filename.replace(".enc", ""), as_attachment=True)
 
 @app.route('/logout')
 def logout():

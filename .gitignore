@@ -10,7 +10,8 @@ ENV/
 venv/
 
 # Secret keys and user attributes
-data/aes.key
+data/aes_encryption.key
+data/aes_hmac.key
 data/policies.json
 
 
