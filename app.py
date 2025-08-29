@@ -33,9 +33,14 @@ def home():
         return redirect(url_for('dashboard'))
     return render_template('index.html')
 
+
+# Only allow non-admin users to login via /login
 @app.route('/login', methods=['POST'])
 def login():
     user_id = request.form.get('user_id')
+    if user_id == 'admin':
+        # Redirect to /admin for password prompt
+        return redirect(url_for('admin_dashboard'))
     with open(USERS_FILE) as f:
         users = json.load(f)
     if user_id in users:
@@ -123,11 +128,22 @@ def logout():
     session.clear()
     return redirect(url_for('home'))
 
-@app.route('/admin')
+
+# Admin password (in production, use env var or hashed password)
+ADMIN_PASSWORD = 'Admin@2025'  # Change this to a strong password
+
+@app.route('/admin', methods=['GET', 'POST'])
 def admin_dashboard():
-    # Only allow access if user is 'admin' (simple check, can be improved)
+    # If not logged in as admin, show password prompt
     if session.get('user_id') != 'admin':
-        return redirect(url_for('home'))
+        if request.method == 'POST':
+            password = request.form.get('password')
+            if password == ADMIN_PASSWORD:
+                session['user_id'] = 'admin'
+                return redirect(url_for('admin_dashboard'))
+            else:
+                flash('Incorrect admin password.', 'danger')
+        return render_template('admin_login.html')
     with open(USERS_FILE) as f:
         users = json.load(f)
     with open(POLICIES_FILE) as f:
