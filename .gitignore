@@ -1,5 +1,5 @@
-# Also ignore uploads folder at root
 uploads/
+
 # Python cache
 __pycache__/
 *.py[cod]
@@ -11,11 +11,9 @@ env/
 ENV/
 venv/
 
-
-
 # Secret keys and user attributes
 app/data/*.key
-app/data/*.json
+app/data/policies.json
 app/user_keys/*.json
 
 # Encrypted files and private keys
