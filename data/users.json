@@ -1,0 +1,10 @@
+{
+    "user1": {
+        "attributes": ["student", "year3"],
+        "password": "pass"
+    },
+    "user2": {
+        "attributes": ["faculty"],
+        "password": "pass"
+    }
+}

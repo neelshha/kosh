@@ -1,6 +1,1 @@
-{
-  "kavish": ["student", "year4, batch1"],
-  "atharva": ["student", "year4, batch1"],
-  "neel": ["student", "year4, batch2"],
-  "admin": ["admin"]
-}
+{"kavish": {"attributes": ["student", "year4, batch1"], "password": "pass"}, "atharva": {"attributes": ["student", "year4, batch1"], "password": "pass"}, "neel": {"attributes": ["student", "year4, batch2"], "password": "pass"}, "admin": {"attributes": ["admin"], "password": "admin"}}
