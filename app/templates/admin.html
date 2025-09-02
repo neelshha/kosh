@@ -45,6 +45,7 @@
             }
         }
     </script>
+    
     <style>
         * { font-family: 'Sora', sans-serif; }
         h1, h2, h3, h4, h5, h6, .title-font { font-family: 'Space Grotesk', sans-serif; }
@@ -77,7 +78,7 @@
                     <h1 class="text-xl font-semibold text-notion-text font-title">Kosh Admin</h1>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <a href="/dashboard" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium text-notion-accent hover:text-white flex items-center space-x-2">
+                    <a href="/dashboard" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium text-notion-accent hover:text-white flex items-center" style="gap:.5rem;">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M9 6l-6 6 6 6"/>
                         </svg>
@@ -100,7 +101,7 @@
             <h2 class="text-3xl font-bold text-notion-text mb-2 font-title">Admin Dashboard</h2>
             <p class="text-notion-text-secondary text-lg font-content">Manage all users, attributes, and file policies on the network.</p>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="flex flex-col gap-8">
             <!-- Users Section -->
             <section class="h-full flex flex-col mb-8">
                 <div class="bg-notion-card border border-notion-border rounded-xl notion-shadow animate-scale-in h-full flex flex-col">
@@ -112,30 +113,50 @@
                             </h3>
                             <p class="text-notion-text-secondary text-base mt-1">Add, edit, or remove users and set their attributes.</p>
                         </div>
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="openUserModal()" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2" aria-label="Add User">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                </svg>
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <button onclick="openUserModal()" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center" aria-label="Add User">
+                                <span class="inline-flex w-5 h-5 items-center justify-center mr-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                </span>
                                 <span>Add User</span>
                             </button>
-                            <button type="button" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2" onclick="bulkDeleteUsers()" aria-label="Bulk Delete">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
+                            <label for="attr-filter" class="sr-only">Filter by attribute</label>
+                            <div class="relative ml-2">
+                                <select id="attr-filter" onchange="filterUsers()" class="btn-secondary appearance-none px-4 py-2 rounded-lg text-sm font-medium pr-8 h-10">
+                                    <option value="">All attributes</option>
+                                    {% for a in all_attributes %}
+                                    <option value="{{ a }}">{{ a }}</option>
+                                    {% endfor %}
+                                </select>
+                                <span class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-notion-text-secondary">
+                                    <svg class="w-4 h-4" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                                        <path d="M6 8l4 4 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                                    </svg>
+                                </span>
+                            </div>
+                            <button type="button" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center" onclick="bulkDeleteUsers()" aria-label="Bulk Delete">
+                                <span class="inline-flex w-5 h-5 items-center justify-center mr-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </span>
                                 <span>Bulk Delete</span>
                             </button>
-                            <button type="button" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2" onclick="openBulkAttrModal()" aria-label="Bulk Set Attributes">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                                </svg>
+                            <button type="button" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center" onclick="openBulkAttrModal()" aria-label="Bulk Set Attributes">
+                                <span class="inline-flex w-5 h-5 items-center justify-center mr-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                                    </svg>
+                                </span>
                                 <span>Bulk Set Attributes</span>
                             </button>
                         </div>
                     </div>
                     <div class="p-4 flex items-center space-x-2">
                         <input type="text" id="user-search" placeholder="Search users..." class="w-full px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text mb-2" onkeyup="filterUsers()">
-                        <button type="button" onclick="document.getElementById('user-search').value='';filterUsers();" class="btn-secondary px-2 py-2 rounded text-sm" aria-label="Clear search">
+                        <button type="button" onclick="document.getElementById('user-search').value='';document.getElementById('attr-filter').value='';filterUsers();" class="btn-secondary px-2 py-2 rounded text-sm" aria-label="Clear search">
                             &#10006;
                         </button>
                     </div>
@@ -155,12 +176,22 @@
                                 <tr class="hover:bg-notion-hover transition">
                                     <td class="px-2"><input type="checkbox" name="user_bulk" value="{{ user }}" aria-label="Select user {{ user }}"></td>
                                     <td class="px-4 py-2 font-medium">{{ user }}</td>
-                                    <td class="px-4 py-2">{{ attrs|join(', ') }}</td>
+                                    {# Normalize different user value shapes: dict with 'attributes', list, or string #}
+                                    {% if attrs is mapping %}
+                                        {% set attr_list = attrs.attributes or [] %}
+                                    {% elif attrs is string %}
+                                        {% set attr_list = [attrs] %}
+                                    {% else %}
+                                        {% set attr_list = attrs or [] %}
+                                    {% endif %}
+                                    <td class="px-4 py-2">{{ attr_list|join(', ') }}</td>
                                     <td class="px-4 py-2">
                                         <div class="flex flex-col items-start space-y-1">
-                                            <a href="#" onclick="openEditUserModal('{{ user }}', '{{ attrs|join(', ') }}')" class="text-notion-accent hover:underline" aria-label="Edit user {{ user }}">Edit</a>
-                                            <a href="/admin/delete_user/{{ user }}" class="text-red-500 hover:underline" onclick="return confirm('Delete user?')" aria-label="Delete user {{ user }}">Delete</a>
-                                            <a href="#" onclick="forceLogoutUser('{{ user }}')" class="text-yellow-400 hover:underline" title="Force logout" aria-label="Force logout {{ user }}">Logout</a>
+                                            {# Escape single quotes for safe insertion into onclick string #}
+                                            {% set attr_str = (attr_list|join(', '))|replace("'", "\\'") %}
+                                            <a href="javascript:void(0)" onclick="openEditUserModal('{{ user }}', '{{ attr_str }}')" class="text-notion-accent hover:underline" aria-label="Edit user {{ user }}">Edit</a>
+                                            <a href="javascript:void(0)" class="text-red-500 hover:underline" onclick="if(confirm('Delete user?')) deleteUser('{{ user }}'); return false;" aria-label="Delete user {{ user }}">Delete</a>
+                                            <a href="javascript:void(0)" onclick="forceLogoutUser('{{ user }}')" class="text-yellow-400 hover:underline" title="Force logout" aria-label="Force logout {{ user }}">Logout</a>
                                         </div>
                                     </td>
                                 </tr>
@@ -214,18 +245,17 @@
                                     <td class="px-2"><input type="checkbox" name="policy_bulk" value="{{ file }}" aria-label="Select policy for {{ file }}"></td>
                                     <td class="px-4 py-2 font-medium">{{ file }}</td>
                                     <td class="px-4 py-2">{{ policy_obj.policy if policy_obj.policy else '' }}</td>
-                                    <td class="px-4 py-2">{{ policy_obj.key if policy_obj.key else '' }}</td>
+                                       <td class="px-4 py-2"></td>
                                     <td class="px-4 py-2">
                                         <div class="flex flex-col items-start space-y-1">
-                                            <a href="#" class="text-notion-accent hover:underline edit-policy-link" 
-                                               data-file="{{ file }}" 
-                                               data-policy="{{ policy_obj.policy or '' }}" 
-                                               data-key="{{ policy_obj.key or '' }}"
-                                               aria-label="Edit policy for {{ file }}">
-                                               Edit
-                                            </a>
-                                            <a href="/admin/delete_policy/{{ file }}" class="text-red-500 hover:underline" onclick="return confirm('Delete policy?')" aria-label="Delete policy for {{ file }}">Delete</a>
-                                            <a href="#" onclick="previewPolicyAccess('{{ file }}')" class="text-green-400 hover:underline" title="Preview access" aria-label="Preview access for {{ file }}">Preview</a>
+                                                          <a href="javascript:void(0)" class="text-notion-accent hover:underline edit-policy-link" 
+                                                              data-file="{{ file }}" 
+                                                              data-policy="{{ policy_obj.policy or '' }}" 
+                                                              aria-label="Edit policy for {{ file }}">
+                                                              Edit
+                                                          </a>
+                                            <a href="javascript:void(0)" class="text-red-500 hover:underline" onclick="if(confirm('Delete policy?')) deletePolicy('{{ file }}'); return false;" aria-label="Delete policy for {{ file }}">Delete</a>
+                                            <a href="javascript:void(0)" onclick="previewPolicyAccess('{{ file }}')" class="text-green-400 hover:underline" title="Preview access" aria-label="Preview access for {{ file }}">Preview</a>
                                         </div>
                                     </td>
                                 </tr>
@@ -270,7 +300,7 @@
                                     <td class="px-4 py-2">
                                         <div class="flex flex-col items-start space-y-1">
                                             <a href="/download/{{ file.name }}" class="text-notion-accent hover:underline" aria-label="Download {{ file.name }}">Download</a>
-                                            <a href="#" onclick="deleteFile('{{ file.name }}')" class="text-red-500 hover:underline" aria-label="Delete {{ file.name }}">Delete</a>
+                                            <a href="javascript:void(0)" onclick="if(confirm('Delete file?')) deleteFile('{{ file.name }}'); return false;" class="text-red-500 hover:underline" aria-label="Delete {{ file.name }}">Delete</a>
                                         </div>
                                     </td>
                                 </tr>
@@ -282,7 +312,7 @@
                 </div>
             </section>
         </div>
-        <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="mt-12 flex flex-col gap-8">
             <!-- Audit Logs -->
             <div class="bg-notion-card border border-notion-border rounded-xl notion-shadow p-6">
                 <h4 class="text-lg font-semibold text-notion-text font-title mb-2">Audit Logs</h4>
@@ -357,11 +387,18 @@ function closeModal(e) {
 // User search/filter
 function filterUsers() {
     const input = document.getElementById('user-search').value.toLowerCase();
+    // support comma-separated attribute filters (e.g. "a, b") and require all tokens to match
+    const attrFilter = document.getElementById('attr-filter').value.toLowerCase();
     const rows = document.querySelectorAll('#users-table tbody tr');
     rows.forEach(row => {
         const user = row.children[1].textContent.toLowerCase();
         const attrs = row.children[2].textContent.toLowerCase();
-        row.style.display = (user.includes(input) || attrs.includes(input)) ? '' : 'none';
+        const matchesText = user.includes(input) || attrs.includes(input);
+        // compute attribute tokens from the row and from the filter
+        const rowAttrs = attrs.split(',').map(s => s.trim()).filter(Boolean);
+        const filterTokens = attrFilter.split(',').map(s => s.trim()).filter(Boolean);
+        const matchesAttr = filterTokens.length === 0 || filterTokens.every(tok => rowAttrs.includes(tok));
+        row.style.display = (matchesText && matchesAttr) ? '' : 'none';
     });
 }
 function toggleAllUsers(source) {
@@ -486,19 +523,16 @@ function openPolicyModal() {
         <form id='add-policy-form'>
             <input type='text' name='file' placeholder='File name' required class='w-full mb-3 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text'>
             <input type='text' name='policy' placeholder='Comma separated attributes' required class='w-full mb-3 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text'>
-            <input type='text' name='key' placeholder='Key' required class='w-full mb-3 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text'>
             <button type='submit' class='btn-primary px-4 py-2 rounded text-white'>Add</button>
         </form>`);
     document.getElementById('add-policy-form').onsubmit = function(e) {
         e.preventDefault();
+        // POST form-encoded to the server route which expects form data
         fetch('/admin/add_policy', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ file: this.file.value, policy: this.policy.value, key: this.key.value })
-        }).then(r => r.json()).then(res => {
-            if (res.success) window.location.reload();
-            else alert('Error adding policy');
-        });
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ file: this.file.value, policy: this.policy.value }).toString()
+        }).then(() => window.location.reload()).catch(() => alert('Error adding policy'));
     };
 }
 function openEditPolicyModal(file, policy, key) {
@@ -506,20 +540,53 @@ function openEditPolicyModal(file, policy, key) {
         <form id='edit-policy-form'>
             <input type='text' name='file' value='${file}' readonly class='w-full mb-3 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text'>
             <input type='text' name='policy' value='${policy}' required class='w-full mb-3 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text'>
-            <input type='text' name='key' value='${key}' required class='w-full mb-3 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text'>
             <button type='submit' class='btn-primary px-4 py-2 rounded text-white'>Save</button>
         </form>`);
     document.getElementById('edit-policy-form').onsubmit = function(e) {
         e.preventDefault();
-        fetch('/admin/edit_policy', {
+        // POST to the server route that accepts the filename in the URL
+        const target = '/admin/edit_policy/' + encodeURIComponent(this.file.value);
+        const form = this;
+        fetch(target, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ file: this.file.value, policy: this.policy.value, key: this.key.value })
-        }).then(r => r.json()).then(res => {
-            if (res.success) window.location.reload();
-            else alert('Error editing policy');
-        });
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+            body: new URLSearchParams({ policy: this.policy.value }).toString()
+        }).then(async res => {
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                const err = data && data.error ? data.error : 'Error editing policy';
+                showInlineError(form, err);
+                return;
+            }
+            const data = await res.json().catch(() => ({}));
+            if (data && data.success) {
+                // update the policies table cell for this file
+                const fileName = form.file.value;
+                const rows = document.querySelectorAll('#policies-table tbody tr');
+                rows.forEach(r => {
+                    if (r.querySelector('input[name="policy_bulk"]') && r.querySelector('input[name="policy_bulk"]').value === fileName) {
+                        const policyCell = r.children[2];
+                        if (policyCell) policyCell.textContent = form.policy.value;
+                    }
+                });
+                closeModal();
+            } else {
+                const err = (data && data.error) ? data.error : 'Error editing policy';
+                showInlineError(form, err);
+            }
+        }).catch(() => showInlineError(form, 'Network error'));
     };
+}
+
+// show inline error inside modal form
+function showInlineError(form, message) {
+    let err = form.querySelector('.inline-error');
+    if (!err) {
+        err = document.createElement('div');
+        err.className = 'inline-error text-red-400 text-sm mt-2';
+        form.appendChild(err);
+    }
+    err.textContent = message;
 }
 
 // Attach event listeners for edit policy links (after DOM loaded)
@@ -529,8 +596,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             const file = this.getAttribute('data-file');
             const policy = this.getAttribute('data-policy');
-            const key = this.getAttribute('data-key');
-            openEditPolicyModal(file, policy, key);
+            openEditPolicyModal(file, policy);
         });
     });
 });
@@ -545,6 +611,34 @@ function deleteFile(filename) {
     }).then(r => r.json()).then(res => {
         if (res.success) window.location.reload();
         else alert('Error deleting file');
+    });
+}
+function deleteUser(user) {
+    fetch('/admin/delete_user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user })
+    }).then(r => r.json()).then(res => {
+        if (res.success) {
+            const row = document.querySelector(`#users-table input[value="${user}"]`)
+            if (row) row.closest('tr').remove();
+        } else {
+            alert('Error deleting user');
+        }
+    });
+}
+function deletePolicy(file) {
+    fetch('/admin/delete_policy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file })
+    }).then(r => r.json()).then(res => {
+        if (res.success) {
+            const row = document.querySelector(`#policies-table input[value="${file}"]`)
+            if (row) row.closest('tr').remove();
+        } else {
+            alert('Error deleting policy');
+        }
     });
 }
 function addAttribute() {

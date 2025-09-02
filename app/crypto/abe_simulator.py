@@ -10,10 +10,21 @@ USERS_FILE = os.path.join(PROJECT_ROOT, 'app', 'data', 'users.json')
 def get_user_attributes(user_id):
     with open(USERS_FILE) as f:
         users = json.load(f)
-    attrs = users.get(user_id, [])
-    # Flatten attributes if any are comma-separated
+    # Support multiple user data shapes:
+    # 1) { "alice": ["student","year3"] }  (legacy)
+    # 2) { "alice": { "attributes": ["student","year3"], "password": "..." } }
+    user_entry = users.get(user_id, [])
+    # Extract attributes depending on stored shape
+    if isinstance(user_entry, dict):
+        attrs = user_entry.get('attributes', [])
+    else:
+        attrs = user_entry
+
+    # Flatten attributes and split any comma-separated values
     flat_attrs = []
     for attr in attrs:
+        if not isinstance(attr, str):
+            continue
         flat_attrs.extend([a.strip() for a in attr.split(',') if a.strip()])
     return flat_attrs
 
