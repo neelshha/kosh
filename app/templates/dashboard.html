@@ -347,9 +347,14 @@
                                 id="policy"
                                 required 
                                 placeholder="e.g., student,year3,batch1"
-                                class="w-full px-4 py-3 bg-notion-input border border-notion-border rounded-lg text-notion-text placeholder-notion-text-secondary focus:outline-none focus:border-notion-accent transition-colors"
+                                class="w-full px-4 py-3 bg-notion-input border border-notion-border rounded-lg text-notion-text placeholder-notion-text-secondary focus:outline-none focus:border-notion-accent transition-colors mb-2"
                             >
-                            <p class="text-xs text-notion-text-secondary mt-2">Type comma-separated attributes (e.g., student,year3,batch1)</p>
+                            <div id="attr-btn-group" class="flex flex-wrap gap-2 mb-2">
+                                {% for attr in all_attributes %}
+                                <button type="button" class="attr-btn px-3 py-2 rounded-full bg-notion-card text-notion-text-secondary" data-attr="{{ attr }}" aria-pressed="false">{{ attr }}</button>
+                                {% endfor %}
+                            </div>
+                            <p class="text-xs text-notion-text-secondary mt-2">Select attributes below or type manually (comma-separated)</p>
                         </div>
 
                         <!-- Progress Bar -->
@@ -453,7 +458,9 @@
 
     <script>
         // Improved upload UI: accessible file list, enable/disable upload button, robust progress handling
-        (function() {
+    // Attribute button toggling for policy input
+    window.allAttributes = {{ all_attributes|tojson|safe }};
+    (function() {
             const fileInput = document.getElementById('file-input');
             const uploadZone = document.getElementById('upload-zone');
             const fileList = document.getElementById('file-list');
@@ -529,7 +536,40 @@
                 updateUploadButtonState();
             });
 
-            policyInput.addEventListener('input', updateUploadButtonState);
+            policyInput.addEventListener('input', function() {
+                updateUploadButtonState();
+                // Sync button selection with input value
+                const val = policyInput.value.split(',').map(a => a.trim()).filter(Boolean);
+                document.querySelectorAll('.attr-btn').forEach(btn => {
+                    if (val.includes(btn.getAttribute('data-attr'))) {
+                        btn.classList.add('bg-notion-accent', 'text-white');
+                        btn.classList.remove('bg-notion-card', 'text-notion-text-secondary');
+                        btn.setAttribute('aria-pressed', 'true');
+                    } else {
+                        btn.classList.remove('bg-notion-accent', 'text-white');
+                        btn.classList.add('bg-notion-card', 'text-notion-text-secondary');
+                        btn.setAttribute('aria-pressed', 'false');
+                    }
+                });
+            });
+
+            // Attribute button click toggling
+            document.querySelectorAll('.attr-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const attr = this.getAttribute('data-attr');
+                    let current = policyInput.value.split(',').map(a => a.trim()).filter(Boolean);
+                    if (this.classList.contains('bg-notion-accent')) {
+                        // Remove
+                        current = current.filter(a => a !== attr);
+                    } else {
+                        // Add
+                        if (!current.includes(attr)) current.push(attr);
+                    }
+                    policyInput.value = current.join(', ');
+                    // Trigger input event for sync
+                    policyInput.dispatchEvent(new Event('input'));
+                });
+            });
 
             // drag/drop
             uploadZone.addEventListener('dragover', function(e) {
