@@ -22,6 +22,9 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     
+    <!-- Socket.IO for real-time updates -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -299,7 +302,7 @@
                                         <i data-lucide="upload" class="w-12 h-12 text-notion-text-secondary mx-auto"></i>
                                     </div>
                                     <div class="text-notion-text mb-2 font-medium">Click to upload or drag and drop</div>
-                                    <div class="text-notion-text-secondary text-sm">You can select multiple files (max depends on server configuration)</div>
+                                    <div class="text-notion-text-secondary text-sm">You can select multiple files (no size restrictions)</div>
                                 </label>
 
                                 <!-- Accessible file list (populated by JS) -->
@@ -466,6 +469,129 @@
     </div>
 
     <script>
+        // Socket.IO for real-time updates
+        const socket = io();
+        
+        // Join dashboard updates room when connecting
+        socket.on('connect', function() {
+            socket.emit('join_dashboard');
+        });
+        
+        // Handle file upload events
+        socket.on('file_uploaded', function(data) {
+            console.log('File uploaded:', data);
+            // Refresh the file list
+            refreshFileList();
+            showNotification(`New file(s) uploaded by ${data.uploader}`, 'success');
+        });
+        
+        // Handle file deletion events
+        socket.on('file_deleted', function(data) {
+            console.log('File deleted:', data);
+            // Refresh the file list
+            refreshFileList();
+            showNotification(`File ${data.filename} was deleted`, 'info');
+        });
+        
+        // Function to refresh the file list without reloading the page
+        function refreshFileList() {
+            fetch('/api/files')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.files) {
+                        updateFileDisplay(data.files);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error refreshing file list:', error);
+                });
+        }
+        
+        // Function to update the file display
+        function updateFileDisplay(files) {
+            const fileSection = document.querySelector('.space-y-3');
+            const noFilesSection = document.querySelector('.text-center.py-16');
+            const parentContainer = fileSection ? fileSection.parentElement : (noFilesSection ? noFilesSection.parentElement : null);
+            
+            if (!parentContainer) return;
+            
+            // Clear existing content
+            parentContainer.innerHTML = '';
+            
+            if (files.length === 0) {
+                // Show no files message
+                parentContainer.innerHTML = `
+                    <div class="text-center py-16">
+                        <div class="w-16 h-16 bg-notion-border rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="file-plus" class="w-8 h-8 text-notion-text-secondary"></i>
+                        </div>
+                        <h4 class="text-lg font-medium text-notion-text mb-2 font-title">No files yet</h4>
+                        <p class="text-notion-text-secondary text-sm mb-6 font-content">Upload your first file to get started with secure encryption</p>
+                        <button onclick="document.getElementById('file-input').click()" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2 mx-auto">
+                            <i data-lucide="upload" class="w-4 h-4"></i>
+                            <span>Upload your first file</span>
+                        </button>
+                    </div>
+                `;
+            } else {
+                // Show files
+                const filesContainer = document.createElement('div');
+                filesContainer.className = 'space-y-3';
+                
+                files.forEach(file => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item p-4 rounded-lg border border-notion-border bg-notion-bg/50';
+                    
+                    let senderInfo = '';
+                    if (file.sender) {
+                        if (file.is_owner) {
+                            senderInfo = '<span class="text-green-400">Uploaded by you</span>';
+                        } else {
+                            senderInfo = `Uploaded by: ${file.sender}`;
+                        }
+                    } else {
+                        senderInfo = '<span class="text-orange-400">Uploader unknown</span>';
+                    }
+                    
+                    const deleteButton = file.is_owner ? `
+                        <button onclick="deleteFile('${file.filename}')" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2 transition-colors">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            <span>Delete</span>
+                        </button>
+                    ` : '';
+                    
+                    fileItem.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-notion-accent/10 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="file-text" class="w-4 h-4 text-notion-accent"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-notion-text">${file.filename}</p>
+                                    <p class="text-xs text-notion-text-secondary">Encrypted • Ready for download</p>
+                                    <p class="text-xs text-notion-text-secondary">${senderInfo}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <a href="/download/${file.filename}" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2">
+                                    <i data-lucide="download" class="w-4 h-4"></i>
+                                    <span>Download</span>
+                                </a>
+                                ${deleteButton}
+                            </div>
+                        </div>
+                    `;
+                    
+                    filesContainer.appendChild(fileItem);
+                });
+                
+                parentContainer.appendChild(filesContainer);
+            }
+            
+            // Reinitialize Lucide icons
+            lucide.createIcons();
+        }
+
         // Utility functions for better UX
         function showNotification(message, type = 'success') {
             const notification = document.createElement('div');
@@ -497,8 +623,7 @@
             .then(data => {
                 if (data.success) {
                     showNotification(`File "${filename.replace('.enc', '')}" deleted successfully`, 'success');
-                    // Reload the page to refresh the file list
-                    setTimeout(() => window.location.reload(), 1000);
+
                 } else {
                     showNotification(`Error deleting file: ${data.error}`, 'error');
                 }
@@ -539,8 +664,7 @@
             }
 
             function validateFiles(files) {
-                const maxFileSize = 100 * 1024 * 1024; // 100MB per file
-                const maxTotalSize = 500 * 1024 * 1024; // 500MB total
+                // File sharing limits removed - no size restrictions
                 let totalSize = 0;
                 const invalidFiles = [];
 
@@ -548,17 +672,13 @@
                     const file = files[i];
                     totalSize += file.size;
                     
-                    if (file.size > maxFileSize) {
-                        invalidFiles.push(`${file.name} (${formatSize(file.size)}) exceeds 100MB limit`);
-                    }
+                    // No file size validation - all files are allowed
                 }
 
-                if (totalSize > maxTotalSize) {
-                    invalidFiles.push(`Total size (${formatSize(totalSize)}) exceeds 500MB limit`);
-                }
+                // No total size validation - unlimited total size
 
                 return {
-                    valid: invalidFiles.length === 0,
+                    valid: true, // Always valid since no limits are enforced
                     errors: invalidFiles,
                     totalSize: totalSize
                 };
@@ -849,9 +969,19 @@
                         if (xhr.status === 200 && json && json.success) {
                             showNotification('Files uploaded successfully!', 'success');
                             progressTime.textContent = 'Upload complete!';
+                            // Clear the form and reset UI
                             setTimeout(() => {
-                                window.location.reload();
-                            }, 1000);
+                                const dt = new DataTransfer();
+                                fileInput.files = dt.files;
+                                renderFileList(fileInput.files);
+                                updateUploadButtonState();
+                                progressContainer.style.display = 'none';
+                                fileInput.disabled = false;
+                                policyInput.disabled = false;
+                                policyInput.value = '';
+                                uploadBtn.innerHTML = '<i data-lucide="upload" class="w-4 h-4"></i><span>Upload file</span>';
+                                lucide.createIcons();
+                            }, 1500);
                         } else {
                             // re-enable inputs so user can retry
                             fileInput.disabled = false;
@@ -900,7 +1030,9 @@
                     uploadBtn.innerHTML = '<i data-lucide="upload" class="w-4 h-4"></i><span>Upload file</span>';
                     // Reinitialize Lucide icons
                     lucide.createIcons();
-                    showNotification('Upload timed out. Please try again with smaller files.', 'error');
+
+                    showNotification('Upload timed out. Please try again.', 'error');
+
                     setTimeout(() => { progressContainer.style.display = 'none'; }, 2000);
                 };
 
