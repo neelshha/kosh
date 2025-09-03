@@ -1,25 +1,28 @@
 {
   "neel": {
     "attributes": [
-      "year4",
       "batch2",
-      "student"
+      "cyber",
+      "student",
+      "year4"
     ],
     "password": "pass"
   },
   "atharva": {
     "attributes": [
-      "year4",
       "batch1",
-      "student"
+      "cyber",
+      "student",
+      "year4"
     ],
     "password": "pass"
   },
   "kavish": {
     "attributes": [
-      "year4",
       "batch1",
-      "student"
+      "cyber",
+      "student",
+      "year4"
     ],
     "password": "pass"
   },
@@ -31,17 +34,19 @@
   },
   "das": {
     "attributes": [
+      "batch1",
+      "cyber",
       "student",
-      "year4",
-      "batch1"
+      "year4"
     ],
     "password": "pass"
   },
   "kale": {
     "attributes": [
+      "batch2",
+      "cyber",
       "student",
-      "year4",
-      "batch2"
+      "year4"
     ],
     "password": "pass"
   }
