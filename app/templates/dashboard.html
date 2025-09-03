@@ -267,7 +267,7 @@
         
         .notification {
             position: fixed;
-            top: 20px;
+            bottom: 20px;
             right: 20px;
             z-index: 1000;
             min-width: 300px;
@@ -276,25 +276,26 @@
             font-size: 14px;
             font-weight: 500;
             opacity: 0;
-            transform: translateX(100%);
+            transform: translateY(100%);
             transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
         
         .notification.show {
             opacity: 1;
-            transform: translateX(0);
+            transform: translateY(0);
         }
         
         .notification.success {
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.2);
-            color: #22c55e;
+            background: #10b981;
+            border: 1px solid #059669;
+            color: white;
         }
         
         .notification.error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #ef4444;
+            background: #ef4444;
+            border: 1px solid #dc2626;
+            color: white;
         }
         
         /* Loading animation */
@@ -327,6 +328,7 @@
             .notification {
                 left: 10px;
                 right: 10px;
+                bottom: 10px;
                 min-width: auto;
             }
             
@@ -723,11 +725,11 @@
                 for (let i = 0; i < files.length; i++) {
                     const f = files[i];
                     const item = document.createElement('div');
-                    item.className = 'mb-2 flex items-center justify-between p-2 rounded border border-notion-border';
+                    item.className = 'mb-2 flex items-center justify-between p-2 rounded border border-notion-border bg-notion-bg/30 hover:bg-notion-hover transition-colors';
                     
                     const name = document.createElement('div');
                     name.className = 'truncate text-notion-text';
-                    name.style.maxWidth = '60%';
+                    name.style.maxWidth = '50%';
                     name.title = f.name;
                     name.textContent = f.name;
                     
@@ -745,21 +747,82 @@
                     leftSide.appendChild(icon);
                     leftSide.appendChild(name);
                     
+                    // Add remove button
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'ml-2 p-1 rounded-full bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors flex-shrink-0';
+                    removeBtn.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+                    removeBtn.title = `Remove ${f.name}`;
+                    removeBtn.setAttribute('aria-label', `Remove ${f.name}`);
+                    removeBtn.addEventListener('click', function() {
+                        removeFileFromList(i);
+                    });
+                    
+                    const rightSide = document.createElement('div');
+                    rightSide.className = 'flex items-center space-x-2';
+                    rightSide.appendChild(meta);
+                    rightSide.appendChild(removeBtn);
+                    
                     item.appendChild(leftSide);
-                    item.appendChild(meta);
+                    item.appendChild(rightSide);
                     frag.appendChild(item);
                 }
                 
                 const summary = document.createElement('div');
                 summary.className = 'text-notion-text-secondary text-sm mt-2 p-2 bg-notion-input rounded';
                 summary.innerHTML = `
-                    <strong>${files.length} file(s) selected</strong><br>
-                    Total size: ${formatSize(validation.totalSize)}<br>
-                    ${validation.valid ? '✅ Ready to upload' : '❌ Please fix errors above'}
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <strong>${files.length} file(s) selected</strong><br>
+                            Total size: ${formatSize(validation.totalSize)}<br>
+                            ${validation.valid ? '✅ Ready to upload' : '❌ Please fix errors above'}
+                        </div>
+                        <button type="button" id="clear-all-files" class="btn-secondary px-3 py-1 rounded text-xs font-medium text-notion-text hover:text-white flex items-center space-x-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            <span>Clear All</span>
+                        </button>
+                    </div>
                 `;
                 
                 fileList.appendChild(frag);
                 fileList.appendChild(summary);
+                
+                // Add clear all functionality
+                const clearAllBtn = summary.querySelector('#clear-all-files');
+                if (clearAllBtn) {
+                    clearAllBtn.addEventListener('click', function() {
+                        if (confirm('Are you sure you want to remove all selected files?')) {
+                            clearAllFiles();
+                        }
+                    });
+                }
+            }
+
+            function removeFileFromList(indexToRemove) {
+                if (!fileInput.files || indexToRemove < 0 || indexToRemove >= fileInput.files.length) return;
+                
+                const dt = new DataTransfer();
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    if (i !== indexToRemove) {
+                        dt.items.add(fileInput.files[i]);
+                    }
+                }
+                fileInput.files = dt.files;
+                renderFileList(fileInput.files);
+                updateUploadButtonState();
+                
+                // Show feedback
+                showNotification('File removed from upload queue', 'success');
+            }
+
+            function clearAllFiles() {
+                const dt = new DataTransfer();
+                fileInput.files = dt.files;
+                renderFileList(fileInput.files);
+                updateUploadButtonState();
+                showNotification('All files cleared from upload queue', 'success');
             }
 
             function updateUploadButtonState() {
