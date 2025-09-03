@@ -4,8 +4,10 @@ import json
 
 import os, sys
 # Always resolve data path from project root
-PROJECT_ROOT = sys.path[0]
-USERS_FILE = os.path.join(PROJECT_ROOT, 'app', 'data', 'users.json')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # crypto directory
+APP_DIR = os.path.dirname(BASE_DIR)  # app directory  
+PROJECT_ROOT = os.path.dirname(APP_DIR)  # project root
+USERS_FILE = os.path.join(PROJECT_ROOT, 'data', 'users.json')
 
 def get_user_attributes(user_id):
     with open(USERS_FILE) as f:
