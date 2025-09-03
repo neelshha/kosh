@@ -28,5 +28,21 @@
       "admin"
     ],
     "password": "pass"
+  },
+  "das": {
+    "attributes": [
+      "student",
+      "year4",
+      "batch1"
+    ],
+    "password": "pass"
+  },
+  "kale": {
+    "attributes": [
+      "student",
+      "year4",
+      "batch2"
+    ],
+    "password": "pass"
   }
 }
