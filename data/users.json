@@ -1,18 +1,32 @@
 {
-    "neel": {
-        "attributes": ["year4", "batch2", "student"],
-        "password": "pass"
-    },
-    "atharva": {
-        "attributes": ["year4", "batch1", "student"],
-        "password": "pass"
-    },
-    "kavish": {
-        "attributes": ["year4", "batch1", "student"],
-        "password": "pass"
-    },
-    "admin": {
-        "attributes": ["admin"],
-        "password": "pass"
-    }
+  "neel": {
+    "attributes": [
+      "year4",
+      "batch2",
+      "student"
+    ],
+    "password": "pass"
+  },
+  "atharva": {
+    "attributes": [
+      "year4",
+      "batch1",
+      "student"
+    ],
+    "password": "pass"
+  },
+  "kavish": {
+    "attributes": [
+      "year4",
+      "batch1",
+      "student"
+    ],
+    "password": "pass"
+  },
+  "admin": {
+    "attributes": [
+      "admin"
+    ],
+    "password": "pass"
+  }
 }
