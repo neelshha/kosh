@@ -29,6 +29,19 @@ USERS_FILE = os.path.join(DATA_DIR, 'users.json')
 POLICIES_FILE = os.path.join(DATA_DIR, 'policies.json')
 AUDIT_LOG_FILE = os.path.join(DATA_DIR, 'audit_logs.jsonl')
 
+def safe_load_json(file_path, default_value=None):
+    """Safely load JSON from a file, handling empty files and JSON decode errors."""
+    try:
+        with open(file_path, 'r') as f:
+            return json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError):
+        # Initialize with default value if file is corrupted or missing
+        if default_value is None:
+            default_value = {}
+        with open(file_path, 'w') as f:
+            json.dump(default_value, f)
+        return default_value
+
 def log_audit(user, action, details=None, ip=None):
     import datetime, json
     entry = {
@@ -144,9 +157,7 @@ def dashboard():
     if not user_id:
         return redirect(url_for('home'))
     # Load policies and filter files based on attribute-based access control.
-    # Load policies and filter files based on attribute-based access control.
-    with open(POLICIES_FILE) as f:
-        policies = json.load(f)
+    policies = safe_load_json(POLICIES_FILE, {})
 
     user_files = []
     is_admin = (user_id == 'admin')
@@ -157,27 +168,47 @@ def dashboard():
                 sender = policy.get('sender')
             else:
                 sender = None
-            user_files.append({'filename': fname, 'sender': sender})
+            user_files.append({
+                'filename': fname, 
+                'sender': sender,
+                'is_owner': True  # Admin can delete any file
+            })
     else:
         for fname, policy in policies.items():
             if isinstance(policy, dict):
                 access_policy = policy.get('policy')
+                sender = policy.get('sender')
             else:
                 access_policy = policy
+                sender = None
 
-            # Normalize access_policy into a list of attributes
-            if isinstance(access_policy, str):
-                required_attrs = [a.strip() for a in access_policy.split(',') if a.strip()]
-            elif isinstance(access_policy, list):
-                required_attrs = access_policy
-            else:
-                required_attrs = []
+            # Check if user is the owner
+            is_owner = (sender == user_id)
+            
+            # If user is owner, they can always access their file
+            has_access = is_owner
+            
+            # If not owner, check access policy
+            if not has_access:
+                # Normalize access_policy into a list of attributes
+                if isinstance(access_policy, str):
+                    required_attrs = [a.strip() for a in access_policy.split(',') if a.strip()]
+                elif isinstance(access_policy, list):
+                    required_attrs = access_policy
+                else:
+                    required_attrs = []
 
-            try:
-                if abe.check_access(user_id, required_attrs):
-                    user_files.append({'filename': fname})
-            except Exception:
-                continue
+                try:
+                    has_access = abe.check_access(user_id, required_attrs)
+                except Exception:
+                    has_access = False
+            
+            if has_access:
+                user_files.append({
+                    'filename': fname, 
+                    'sender': sender,
+                    'is_owner': is_owner
+                })
 
     # Get local IP address for share info
     # Get local IP address for share info
@@ -256,8 +287,7 @@ def upload():
         policy = ' AND '.join(policy)
 
     uploaded_files = []
-    with open(POLICIES_FILE) as f:
-        policies = json.load(f)
+    policies = safe_load_json(POLICIES_FILE, {})
 
     for file in files:
         filename = file.filename + '.enc'
@@ -282,8 +312,7 @@ def download(filename):
     if user_id == 'admin':
         pass  # admin can download any file
     else:
-        with open(POLICIES_FILE) as f:
-            policies = json.load(f)
+        policies = safe_load_json(POLICIES_FILE, {})
         policy_obj = policies.get(filename)
         if not policy_obj:
             return "Access Denied", 403
@@ -672,7 +701,56 @@ def admin_delete_policy_ajax():
     return jsonify(success=True)
 
 
-# AJAX endpoint: delete an uploaded file and its policy
+# AJAX endpoint: delete an uploaded file and its policy (for users to delete their own files)
+@app.route('/delete_file', methods=['POST'])
+def delete_file():
+    if 'user_id' not in session:
+        return jsonify(success=False, error='unauthorized'), 403
+    
+    user_id = session['user_id']
+    data = request.get_json() or {}
+    filename = data.get('filename')
+    if not filename:
+        return jsonify(success=False, error='filename required'), 400
+
+    # Check if user owns the file or is admin
+    try:
+        with open(POLICIES_FILE) as f:
+            policies = json.load(f)
+    except Exception:
+        policies = {}
+
+    policy_obj = policies.get(filename)
+    if not policy_obj:
+        return jsonify(success=False, error='file not found'), 404
+    
+    file_owner = policy_obj.get('sender') if isinstance(policy_obj, dict) else None
+    
+    # Allow deletion if user is the owner or admin
+    if user_id != 'admin' and file_owner != user_id:
+        return jsonify(success=False, error='unauthorized - you can only delete your own files'), 403
+
+    # Remove file from uploads
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    try:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        log_audit(user_id, 'delete_file', details=f'Deleted file {filename}', ip=request.remote_addr)
+    except Exception as e:
+        return jsonify(success=False, error=f'could not remove file: {e}'), 500
+
+    # Remove policy entry if present
+    if filename in policies:
+        policies.pop(filename, None)
+        try:
+            with open(POLICIES_FILE, 'w') as f:
+                json.dump(policies, f, indent=2)
+        except Exception as e:
+            return jsonify(success=False, error=f'could not update policies: {e}'), 500
+
+    return jsonify(success=True)
+
+# AJAX endpoint: delete an uploaded file and its policy (admin only)
 @app.route('/admin/delete_file', methods=['POST'])
 def admin_delete_file():
     if session.get('user_id') != 'admin':
