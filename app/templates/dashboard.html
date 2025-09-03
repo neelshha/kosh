@@ -169,127 +169,6 @@
             })();
         });
     </script>
-    <!-- Change Password Modal -->
-    <div id="change-password-modal" class="fixed inset-0 z-60 hidden items-center justify-center bg-black bg-opacity-50" aria-hidden="true" role="dialog" aria-modal="true">
-        <div class="bg-notion-card border border-notion-border rounded-xl w-full max-w-md p-6 m-4">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-notion-text font-title">Change Password</h3>
-                <button id="close-change-password" class="text-notion-text-secondary hover:text-notion-text" aria-label="Close">✕</button>
-            </div>
-            <form id="change-password-form" action="/change_password" method="POST" class="space-y-4">
-                {% if csrf_token %}
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                {% endif %}
-                <div>
-                    <label for="modal_new_password" class="block text-sm font-medium text-notion-text mb-2">New Password</label>
-                    <div class="relative">
-                        <input type="password" name="new_password" id="modal_new_password" required class="w-full px-4 py-3 bg-notion-input border border-notion-border rounded-xl text-notion-text placeholder-notion-text-secondary focus:outline-none focus:border-notion-accent transition-colors text-lg" placeholder="Enter new password" aria-describedby="password-help">
-                        <button type="button" id="toggle-password-visibility" class="absolute right-2 top-1/2 -translate-y-1/2 text-notion-text-secondary hover:text-notion-text" aria-label="Show password">👁️</button>
-                    </div>
-                    <p id="password-help" class="text-xs text-notion-text-secondary mt-2">You can view the password using the eye button.</p>
-                </div>
-
-                <div>
-                    <label for="modal_confirm_password" class="block text-sm font-medium text-notion-text mb-2">Confirm Password</label>
-                    <input type="password" name="confirm_password" id="modal_confirm_password" required class="w-full px-4 py-3 bg-notion-input border border-notion-border rounded-xl text-notion-text placeholder-notion-text-secondary focus:outline-none focus:border-notion-accent transition-colors text-lg" placeholder="Re-type new password">
-                </div>
-
-                <div id="password-error" class="text-sm text-red-400" role="alert" aria-live="polite" style="display:none;">Passwords do not match.</div>
-
-                <div class="flex justify-end">
-                    <button type="submit" id="change-password-submit" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium" disabled aria-disabled="true">Change Password</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        // Modal open/close for change password — wait for DOM so elements exist
-        document.addEventListener('DOMContentLoaded', function(){
-            (function(){
-                const openBtn = document.getElementById('change-password-btn');
-                const modal = document.getElementById('change-password-modal');
-                const closeBtn = document.getElementById('close-change-password');
-                const firstInput = document.getElementById('modal_new_password');
-
-                if (!openBtn || !modal || !closeBtn || !firstInput) return;
-
-                const confirmInput = document.getElementById('modal_confirm_password');
-                const toggleBtn = document.getElementById('toggle-password-visibility');
-                const submitBtn = document.getElementById('change-password-submit');
-                const errorEl = document.getElementById('password-error');
-
-                function openModal(){
-                    modal.classList.remove('hidden');
-                    modal.classList.add('flex');
-                    modal.setAttribute('aria-hidden', 'false');
-                    // focus first input for accessibility
-                    setTimeout(()=> firstInput.focus(), 60);
-                }
-
-                function closeModal(){
-                    modal.classList.add('hidden');
-                    modal.classList.remove('flex');
-                    modal.setAttribute('aria-hidden', 'true');
-                    try { openBtn.focus(); } catch (e) { /* ignore */ }
-                }
-
-                // show/hide password toggle
-                if (toggleBtn) {
-                    toggleBtn.addEventListener('click', function(){
-                        if (firstInput.type === 'password') {
-                            firstInput.type = 'text';
-                            toggleBtn.setAttribute('aria-label', 'Hide password');
-                            toggleBtn.textContent = '🙈';
-                        } else {
-                            firstInput.type = 'password';
-                            toggleBtn.setAttribute('aria-label', 'Show password');
-                            toggleBtn.textContent = '👁️';
-                        }
-                    });
-                }
-
-                // validate matching passwords
-                function validatePasswords(){
-                    const p1 = firstInput.value || '';
-                    const p2 = (confirmInput && confirmInput.value) || '';
-                    if (p1.length === 0 || p2.length === 0) {
-                        errorEl.style.display = 'none';
-                        submitBtn.disabled = true;
-                        submitBtn.setAttribute('aria-disabled', 'true');
-                        return;
-                    }
-                    if (p1 === p2) {
-                        errorEl.style.display = 'none';
-                        submitBtn.disabled = false;
-                        submitBtn.setAttribute('aria-disabled', 'false');
-                    } else {
-                        errorEl.style.display = 'block';
-                        submitBtn.disabled = true;
-                        submitBtn.setAttribute('aria-disabled', 'true');
-                    }
-                }
-
-                if (confirmInput) {
-                    firstInput.addEventListener('input', validatePasswords);
-                    confirmInput.addEventListener('input', validatePasswords);
-                }
-
-                openBtn.addEventListener('click', openModal);
-                closeBtn.addEventListener('click', closeModal);
-
-                // close on backdrop click
-                modal.addEventListener('click', function(e){
-                    if (e.target === modal) closeModal();
-                });
-
-                // close on Escape
-                document.addEventListener('keydown', function(e){
-                    if (e.key === 'Escape' && modal.classList.contains('flex')) closeModal();
-                });
-            })();
-        });
-    </script>
     <style>
         * {
             font-family: 'Sora', sans-serif;
@@ -328,12 +207,19 @@
             background-color: rgba(30, 144, 255, 0.02);
         }
         
+        .upload-zone.dragover {
+            border-color: #1e90ff;
+            background-color: rgba(30, 144, 255, 0.05);
+            transform: scale(1.02);
+        }
+        
         .file-item {
-            transition: none;
+            transition: all 0.2s ease;
         }
         
         .file-item:hover {
             background-color: #252525;
+            transform: translateY(-1px);
         }
         
         input:focus, textarea:focus {
@@ -344,20 +230,110 @@
         
         .btn-primary {
             background: #1e90ff;
-            transition: none;
+            transition: all 0.2s ease;
         }
         
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background: #0066cc;
+            transform: translateY(-1px);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
         
         .btn-secondary {
             background: rgba(255, 255, 255, 0.05);
-            transition: none;
+            transition: all 0.2s ease;
         }
         
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .attr-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .attr-btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .progress-bar-animate {
+            transition: width 0.3s ease;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            min-width: 300px;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+        
+        .notification.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        /* Loading animation */
+        .loading-spinner {
+            border: 2px solid #2a2a2a;
+            border-top: 2px solid #1e90ff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .grid-cols-1.lg\\:grid-cols-2 {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .max-w-7xl {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            .notification {
+                left: 10px;
+                right: 10px;
+                min-width: auto;
+            }
+            
+            .flex.items-center.space-x-4 {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
         }
     </style>
 </head>
@@ -388,12 +364,6 @@
                         </svg>
                         <span>Change Password</span>
                     </button>
-                    <button id="change-password-btn" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium text-notion-text hover:text-white flex items-center space-x-2" type="button">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0-1.657 1.343-3 3-3s3 1.343 3 3v1h1a1 1 0 011 1v6a1 1 0 01-1 1H7a1 1 0 01-1-1v-6a1 1 0 011-1h1v-1c0-1.657 1.343-3 3-3z"/>
-                        </svg>
-                        <span>Change Password</span>
-                    </button>
                     <a href="/logout" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium text-notion-text hover:text-white flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
@@ -407,8 +377,6 @@
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-6 py-8 animate-slide-up">
-    <!-- Change Password modal is triggered from the navbar button -->
-    <!-- Change Password modal is triggered from the navbar button -->
         <!-- Welcome Section -->
         <div class="mb-12">
             <h2 class="text-3xl font-bold text-notion-text mb-2 font-title">Good to see you back</h2>
@@ -444,41 +412,27 @@
 
                     <div class="p-6 flex-1">
                         <form id="upload-form" class="space-y-6" action="/upload" method="POST" enctype="multipart/form-data" novalidate>
-                            {# Include CSRF token if available in the Flask app context #}
                             {% if csrf_token %}
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             {% endif %}
-                        <form id="upload-form" class="space-y-6" action="/upload" method="POST" enctype="multipart/form-data" novalidate>
-                            {# Include CSRF token if available in the Flask app context #}
-                            {% if csrf_token %}
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            {% endif %}
-                        <!-- File Upload Area -->
-                        <div class="upload-zone rounded-xl p-8 text-center" id="upload-zone">
-                            <input type="file" name="file" id="file-input" class="hidden" multiple aria-hidden="true">
+                            
+                            <!-- File Upload Area -->
+                            <div class="upload-zone rounded-xl p-8 text-center" id="upload-zone">
+                                <input type="file" name="file" id="file-input" class="hidden" multiple aria-hidden="true">
 
-                            <label for="file-input" id="file-label" class="cursor-pointer block" role="button" aria-haspopup="listbox">
-                                <div id="file-placeholder" class="mb-4">
-                                    <svg class="w-12 h-12 text-notion-text-secondary mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <input type="file" name="file" id="file-input" class="hidden" multiple aria-hidden="true">
+                                <label for="file-input" id="file-label" class="cursor-pointer block" role="button" aria-haspopup="listbox">
+                                    <div id="file-placeholder" class="mb-4">
+                                        <svg class="w-12 h-12 text-notion-text-secondary mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 12l3-3m0 0l3 3m-3-3v12"/>
+                                        </svg>
+                                    </div>
+                                    <div class="text-notion-text mb-2 font-medium">Click to upload or drag and drop</div>
+                                    <div class="text-notion-text-secondary text-sm">You can select multiple files (max depends on server configuration)</div>
+                                </label>
 
-                            <label for="file-input" id="file-label" class="cursor-pointer block" role="button" aria-haspopup="listbox">
-                                <div id="file-placeholder" class="mb-4">
-                                    <svg class="w-12 h-12 text-notion-text-secondary mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 12l3-3m0 0l3 3m-3-3v12"/>
-                                    </svg>
-                                </div>
-                                <div class="text-notion-text mb-2 font-medium">Click to upload or drag and drop</div>
-                                <div class="text-notion-text-secondary text-sm">You can select multiple files (max depends on server configuration)</div>
-                                <div class="text-notion-text-secondary text-sm">You can select multiple files (max depends on server configuration)</div>
-                            </label>
-
-                            <!-- Accessible file list (populated by JS) -->
-                            <div id="file-list" class="mt-4 text-left" aria-live="polite"></div>
-
-                            <!-- Accessible file list (populated by JS) -->
-                            <div id="file-list" class="mt-4 text-left" aria-live="polite"></div>
-                        </div>
+                                <!-- Accessible file list (populated by JS) -->
+                                <div id="file-list" class="mt-4 text-left" aria-live="polite"></div>
+                            </div>
 
                         <!-- Policy Input -->
                         <div>
@@ -501,22 +455,18 @@
 
                         <!-- Progress Bar -->
                         <div id="progress-container" class="w-full pt-2" style="display:none;" role="status" aria-live="polite">
-                        <div id="progress-container" class="w-full pt-2" style="display:none;" role="status" aria-live="polite">
                             <div class="w-full bg-notion-border rounded-lg h-3 mb-2">
-                                <div id="progress-bar" class="bg-notion-accent h-3 rounded-lg transition-all duration-200" style="width:0%" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
                                 <div id="progress-bar" class="bg-notion-accent h-3 rounded-lg transition-all duration-200" style="width:0%" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
                             </div>
                             <div class="flex justify-between items-center text-xs text-notion-text-secondary">
                                 <span id="progress-percent">0%</span>
                                 <span id="progress-time">Estimating...</span>
                                 <button type="button" id="cancel-upload" class="ml-4 btn-secondary px-2 py-1 rounded text-xs font-medium" aria-disabled="false">Cancel</button>
-                                <button type="button" id="cancel-upload" class="ml-4 btn-secondary px-2 py-1 rounded text-xs font-medium" aria-disabled="false">Cancel</button>
                             </div>
                         </div>
 
                         <!-- Submit Button -->
                         <div class="flex justify-end pt-4">
-                            <button type="submit" id="upload-btn" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2" disabled aria-disabled="true">
                             <button type="submit" id="upload-btn" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2" disabled aria-disabled="true">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
@@ -602,11 +552,58 @@
         </div>
     </main>
 
+    <!-- Change Password Modal -->
+    <div id="change-password-modal" class="fixed inset-0 z-60 hidden items-center justify-center bg-black bg-opacity-50" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="bg-notion-card border border-notion-border rounded-xl w-full max-w-md p-6 m-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-notion-text font-title">Change Password</h3>
+                <button id="close-change-password" class="text-notion-text-secondary hover:text-notion-text" aria-label="Close">✕</button>
+            </div>
+            <form id="change-password-form" action="/change_password" method="POST" class="space-y-4">
+                {% if csrf_token %}
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                {% endif %}
+                <div>
+                    <label for="modal_new_password" class="block text-sm font-medium text-notion-text mb-2">New Password</label>
+                    <div class="relative">
+                        <input type="password" name="new_password" id="modal_new_password" required class="w-full px-4 py-3 bg-notion-input border border-notion-border rounded-xl text-notion-text placeholder-notion-text-secondary focus:outline-none focus:border-notion-accent transition-colors text-lg" placeholder="Enter new password" aria-describedby="password-help">
+                        <button type="button" id="toggle-password-visibility" class="absolute right-2 top-1/2 -translate-y-1/2 text-notion-text-secondary hover:text-notion-text" aria-label="Show password">👁️</button>
+                    </div>
+                    <p id="password-help" class="text-xs text-notion-text-secondary mt-2">You can view the password using the eye button.</p>
+                </div>
+
+                <div>
+                    <label for="modal_confirm_password" class="block text-sm font-medium text-notion-text mb-2">Confirm Password</label>
+                    <input type="password" name="confirm_password" id="modal_confirm_password" required class="w-full px-4 py-3 bg-notion-input border border-notion-border rounded-xl text-notion-text placeholder-notion-text-secondary focus:outline-none focus:border-notion-accent transition-colors text-lg" placeholder="Re-type new password">
+                </div>
+
+                <div id="password-error" class="text-sm text-red-400" role="alert" aria-live="polite" style="display:none;">Passwords do not match.</div>
+
+                <div class="flex justify-end">
+                    <button type="submit" id="change-password-submit" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium" disabled aria-disabled="true">Change Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // Improved upload UI: accessible file list, enable/disable upload button, robust progress handling
-    // Attribute button toggling for policy input
-    window.allAttributes = {{ all_attributes|tojson|safe }};
-    (function() {
+        // Utility functions for better UX
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+        }
+
+        // Improved upload UI with better UX
+        window.allAttributes = {{ all_attributes|tojson|safe }};
+        (function() {
             const fileInput = document.getElementById('file-input');
             const uploadZone = document.getElementById('upload-zone');
             const fileList = document.getElementById('file-list');
@@ -633,33 +630,87 @@
                 return `${size.toFixed(2)} ${units[i]}`;
             }
 
+            function validateFiles(files) {
+                const maxFileSize = 100 * 1024 * 1024; // 100MB per file
+                const maxTotalSize = 500 * 1024 * 1024; // 500MB total
+                let totalSize = 0;
+                const invalidFiles = [];
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    totalSize += file.size;
+                    
+                    if (file.size > maxFileSize) {
+                        invalidFiles.push(`${file.name} (${formatSize(file.size)}) exceeds 100MB limit`);
+                    }
+                }
+
+                if (totalSize > maxTotalSize) {
+                    invalidFiles.push(`Total size (${formatSize(totalSize)}) exceeds 500MB limit`);
+                }
+
+                return {
+                    valid: invalidFiles.length === 0,
+                    errors: invalidFiles,
+                    totalSize: totalSize
+                };
+            }
+
             function renderFileList(files) {
                 fileList.innerHTML = '';
                 if (!files || files.length === 0) {
-                    fileList.innerHTML = '<div class="text-notion-text-secondary">No files selected</div>';
+                    fileList.innerHTML = '<div class="text-notion-text-secondary text-sm">No files selected</div>';
                     return;
+                }
+
+                const validation = validateFiles(files);
+                
+                if (!validation.valid) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'text-red-400 text-sm mb-2';
+                    errorDiv.innerHTML = `<strong>File validation errors:</strong><br>${validation.errors.join('<br>')}`;
+                    fileList.appendChild(errorDiv);
                 }
 
                 const frag = document.createDocumentFragment();
                 for (let i = 0; i < files.length; i++) {
                     const f = files[i];
                     const item = document.createElement('div');
-                    item.className = 'mb-2 flex items-center justify-between';
+                    item.className = 'mb-2 flex items-center justify-between p-2 rounded border border-notion-border';
+                    
                     const name = document.createElement('div');
-                    name.className = 'truncate';
+                    name.className = 'truncate text-notion-text';
                     name.style.maxWidth = '60%';
                     name.title = f.name;
                     name.textContent = f.name;
+                    
                     const meta = document.createElement('div');
                     meta.className = 'text-notion-text-secondary text-xs';
                     meta.textContent = formatSize(f.size);
-                    item.appendChild(name);
+                    
+                    // Add file type icon
+                    const icon = document.createElement('div');
+                    icon.className = 'w-4 h-4 mr-2 flex-shrink-0';
+                    icon.innerHTML = '📄'; // You could make this more sophisticated based on file type
+                    
+                    const leftSide = document.createElement('div');
+                    leftSide.className = 'flex items-center min-w-0';
+                    leftSide.appendChild(icon);
+                    leftSide.appendChild(name);
+                    
+                    item.appendChild(leftSide);
                     item.appendChild(meta);
                     frag.appendChild(item);
                 }
+                
                 const summary = document.createElement('div');
-                summary.className = 'text-notion-text-secondary text-sm mt-2';
-                summary.textContent = `${files.length} file(s) selected • Ready to upload`;
+                summary.className = 'text-notion-text-secondary text-sm mt-2 p-2 bg-notion-input rounded';
+                summary.innerHTML = `
+                    <strong>${files.length} file(s) selected</strong><br>
+                    Total size: ${formatSize(validation.totalSize)}<br>
+                    ${validation.valid ? '✅ Ready to upload' : '❌ Please fix errors above'}
+                `;
+                
                 fileList.appendChild(frag);
                 fileList.appendChild(summary);
             }
@@ -667,12 +718,16 @@
             function updateUploadButtonState() {
                 const hasFiles = fileInput.files && fileInput.files.length > 0;
                 const policyOk = policyInput.value && policyInput.value.trim().length > 0;
-                if (hasFiles && policyOk) {
+                const filesValid = hasFiles ? validateFiles(fileInput.files).valid : false;
+                
+                if (hasFiles && policyOk && filesValid) {
                     uploadBtn.disabled = false;
                     uploadBtn.setAttribute('aria-disabled', 'false');
+                    uploadBtn.classList.remove('opacity-60');
                 } else {
                     uploadBtn.disabled = true;
                     uploadBtn.setAttribute('aria-disabled', 'true');
+                    uploadBtn.classList.add('opacity-60');
                 }
             }
 
@@ -717,18 +772,32 @@
                 });
             });
 
-            // drag/drop
+            // Enhanced drag/drop with better visual feedback
+            let dragCounter = 0;
+            
+            uploadZone.addEventListener('dragenter', function(e) {
+                e.preventDefault();
+                dragCounter++;
+                uploadZone.classList.add('dragover');
+            });
+            
             uploadZone.addEventListener('dragover', function(e) {
                 e.preventDefault();
-                uploadZone.classList.add('ring-2', 'ring-notion-accent');
             });
+            
             uploadZone.addEventListener('dragleave', function(e) {
                 e.preventDefault();
-                uploadZone.classList.remove('ring-2', 'ring-notion-accent');
+                dragCounter--;
+                if (dragCounter === 0) {
+                    uploadZone.classList.remove('dragover');
+                }
             });
+            
             uploadZone.addEventListener('drop', function(e) {
                 e.preventDefault();
-                uploadZone.classList.remove('ring-2', 'ring-notion-accent');
+                dragCounter = 0;
+                uploadZone.classList.remove('dragover');
+                
                 if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
                     // assignment to fileInput.files may be read-only in some browsers; use a DataTransfer when available
                     try {
@@ -741,6 +810,7 @@
                     }
                     renderFileList(fileInput.files);
                     updateUploadButtonState();
+                    showNotification(`${fileInput.files.length} file(s) selected for upload`, 'success');
                 }
             });
 
@@ -753,19 +823,7 @@
                 const formData = new FormData();
                 for (let i = 0; i < fileInput.files.length; i++) formData.append('file', fileInput.files[i]);
                 formData.append('policy', policyInput.value.trim());
-            // Upload handling
-            uploadForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                if (!fileInput.files || fileInput.files.length === 0) return;
-                if (!policyInput.value || policyInput.value.trim().length === 0) return;
 
-                const formData = new FormData();
-                for (let i = 0; i < fileInput.files.length; i++) formData.append('file', fileInput.files[i]);
-                formData.append('policy', policyInput.value.trim());
-
-                const xhr = new XMLHttpRequest();
-                currentXhr = xhr;
-                xhr.open('POST', uploadForm.getAttribute('action') || '/upload', true);
                 const xhr = new XMLHttpRequest();
                 currentXhr = xhr;
                 xhr.open('POST', uploadForm.getAttribute('action') || '/upload', true);
@@ -780,36 +838,10 @@
                 cancelBtn.setAttribute('aria-disabled', 'false');
                 uploadBtn.disabled = true;
                 uploadBtn.setAttribute('aria-disabled', 'true');
-                fileInput.disabled = true;
-                policyInput.disabled = true;
-                // UI: show progress, disable inputs
-                progressContainer.style.display = 'block';
-                progressBar.style.width = '0%';
-                progressBar.setAttribute('aria-valuenow', '0');
-                progressPercent.textContent = '0%';
-                progressTime.textContent = 'Starting...';
-                cancelBtn.disabled = false;
-                cancelBtn.setAttribute('aria-disabled', 'false');
-                uploadBtn.disabled = true;
-                uploadBtn.setAttribute('aria-disabled', 'true');
+                uploadBtn.innerHTML = '<div class="loading-spinner inline-block mr-2"></div><span>Uploading...</span>';
                 fileInput.disabled = true;
                 policyInput.disabled = true;
 
-                let startTime = null;
-                xhr.upload.addEventListener('progress', function(evt) {
-                    if (!startTime) startTime = Date.now();
-                    if (evt.lengthComputable) {
-                        const percent = Math.round((evt.loaded / evt.total) * 100);
-                        progressBar.style.width = percent + '%';
-                        progressBar.setAttribute('aria-valuenow', String(percent));
-                        progressPercent.textContent = percent + '%';
-                        const elapsed = (Date.now() - startTime) / 1000;
-                        const speed = evt.loaded / Math.max(elapsed, 0.001);
-                        const remaining = evt.total - evt.loaded;
-                        const eta = speed > 0 ? (remaining / speed) : 0;
-                        progressTime.textContent = eta > 1 ? `~${Math.ceil(eta)}s left` : 'Almost done';
-                    }
-                });
                 let startTime = null;
                 xhr.upload.addEventListener('progress', function(evt) {
                     if (!startTime) startTime = Date.now();
@@ -830,51 +862,43 @@
                     progressBar.style.width = '100%';
                     progressBar.setAttribute('aria-valuenow', '100');
                     progressPercent.textContent = '100%';
-                    progressTime.textContent = 'Upload complete!';
+                    progressTime.textContent = 'Processing...';
                     cancelBtn.disabled = true;
                     cancelBtn.setAttribute('aria-disabled', 'true');
 
                     // try to parse response JSON safely
                     setTimeout(() => {
                         let json = null;
-                        try { json = JSON.parse(xhr.responseText); } catch (err) { /* ignore */ }
-                        if (json && json.success) {
-                            window.location.reload();
-                        } else {
-                            // re-enable inputs so user can retry
-                            fileInput.disabled = false;
-                            policyInput.disabled = false;
-                            renderFileList(fileInput.files);
-                            updateUploadButtonState();
-                            // show server response or generic message
-                            progressTime.textContent = (json && json.message) ? json.message : 'Upload finished (server did not return success).';
-                            setTimeout(() => { progressContainer.style.display = 'none'; }, 1500);
+                        try { 
+                            json = JSON.parse(xhr.responseText); 
+                        } catch (err) { 
+                            console.error('Failed to parse server response:', err);
                         }
-                    }, 900);
-                };
-                xhr.onload = function() {
-                    progressBar.style.width = '100%';
-                    progressBar.setAttribute('aria-valuenow', '100');
-                    progressPercent.textContent = '100%';
-                    progressTime.textContent = 'Upload complete!';
-                    cancelBtn.disabled = true;
-                    cancelBtn.setAttribute('aria-disabled', 'true');
-
-                    // try to parse response JSON safely
-                    setTimeout(() => {
-                        let json = null;
-                        try { json = JSON.parse(xhr.responseText); } catch (err) { /* ignore */ }
-                        if (json && json.success) {
-                            window.location.reload();
+                        
+                        if (xhr.status === 200 && json && json.success) {
+                            showNotification('Files uploaded successfully!', 'success');
+                            progressTime.textContent = 'Upload complete!';
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
                         } else {
                             // re-enable inputs so user can retry
                             fileInput.disabled = false;
                             policyInput.disabled = false;
                             renderFileList(fileInput.files);
                             updateUploadButtonState();
-                            // show server response or generic message
-                            progressTime.textContent = (json && json.message) ? json.message : 'Upload finished (server did not return success).';
-                            setTimeout(() => { progressContainer.style.display = 'none'; }, 1500);
+                            
+                            // Restore upload button
+                            uploadBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg><span>Upload file</span>';
+                            
+                            const errorMessage = (json && json.message) ? json.message : 
+                                (xhr.status >= 500) ? 'Server error occurred. Please try again.' :
+                                (xhr.status >= 400) ? 'Upload failed. Please check your files and try again.' :
+                                'Upload finished but status unclear.';
+                            
+                            showNotification(errorMessage, 'error');
+                            progressTime.textContent = 'Upload failed';
+                            setTimeout(() => { progressContainer.style.display = 'none'; }, 2000);
                         }
                     }, 900);
                 };
@@ -886,18 +910,23 @@
                     fileInput.disabled = false;
                     policyInput.disabled = false;
                     updateUploadButtonState();
+                    uploadBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg><span>Upload file</span>';
+                    showNotification('Network error occurred. Please check your connection and try again.', 'error');
+                    setTimeout(() => { progressContainer.style.display = 'none'; }, 2000);
                 };
-                xhr.onerror = function() {
-                    progressTime.textContent = 'Upload failed.';
+
+                xhr.ontimeout = function() {
+                    progressTime.textContent = 'Upload timed out.';
                     cancelBtn.disabled = true;
                     cancelBtn.setAttribute('aria-disabled', 'true');
                     fileInput.disabled = false;
                     policyInput.disabled = false;
                     updateUploadButtonState();
+                    uploadBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg><span>Upload file</span>';
+                    showNotification('Upload timed out. Please try again with smaller files.', 'error');
+                    setTimeout(() => { progressContainer.style.display = 'none'; }, 2000);
                 };
 
-                xhr.send(formData);
-            });
                 xhr.send(formData);
             });
 
@@ -911,6 +940,8 @@
                     fileInput.disabled = false;
                     policyInput.disabled = false;
                     updateUploadButtonState();
+                    uploadBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg><span>Upload file</span>';
+                    showNotification('Upload cancelled.', 'error');
                     setTimeout(() => { progressContainer.style.display = 'none'; }, 900);
                 }
             });
@@ -919,24 +950,177 @@
             renderFileList(fileInput.files);
             updateUploadButtonState();
         })();
-            // Cancel upload
-            cancelBtn.addEventListener('click', function() {
-                if (currentXhr) {
-                    currentXhr.abort();
-                    progressTime.textContent = 'Upload cancelled.';
-                    cancelBtn.disabled = true;
-                    cancelBtn.setAttribute('aria-disabled', 'true');
-                    fileInput.disabled = false;
-                    policyInput.disabled = false;
-                    updateUploadButtonState();
-                    setTimeout(() => { progressContainer.style.display = 'none'; }, 900);
+
+        // Change Password Modal functionality
+        document.addEventListener('DOMContentLoaded', function(){
+            const openBtn = document.getElementById('change-password-btn');
+            const modal = document.getElementById('change-password-modal');
+            const closeBtn = document.getElementById('close-change-password');
+            const firstInput = document.getElementById('modal_new_password');
+
+            if (!openBtn || !modal || !closeBtn || !firstInput) return;
+
+            const confirmInput = document.getElementById('modal_confirm_password');
+            const toggleBtn = document.getElementById('toggle-password-visibility');
+            const submitBtn = document.getElementById('change-password-submit');
+            const errorEl = document.getElementById('password-error');
+
+            function openModal(){
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                modal.setAttribute('aria-hidden', 'false');
+                // focus first input for accessibility
+                setTimeout(()=> firstInput.focus(), 60);
+            }
+
+            function closeModal(){
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                modal.setAttribute('aria-hidden', 'true');
+                // Reset form
+                document.getElementById('change-password-form').reset();
+                errorEl.style.display = 'none';
+                submitBtn.disabled = true;
+                submitBtn.setAttribute('aria-disabled', 'true');
+                try { openBtn.focus(); } catch (e) { /* ignore */ }
+            }
+
+            // show/hide password toggle
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function(){
+                    if (firstInput.type === 'password') {
+                        firstInput.type = 'text';
+                        toggleBtn.setAttribute('aria-label', 'Hide password');
+                        toggleBtn.textContent = '🙈';
+                    } else {
+                        firstInput.type = 'password';
+                        toggleBtn.setAttribute('aria-label', 'Show password');
+                        toggleBtn.textContent = '👁️';
+                    }
+                });
+            }
+
+            // validate matching passwords with better UX
+            function validatePasswords(){
+                const p1 = firstInput.value || '';
+                const p2 = (confirmInput && confirmInput.value) || '';
+                
+                // Clear previous styling
+                firstInput.classList.remove('border-red-500', 'border-green-500');
+                if (confirmInput) confirmInput.classList.remove('border-red-500', 'border-green-500');
+                
+                if (p1.length === 0 || p2.length === 0) {
+                    errorEl.style.display = 'none';
+                    submitBtn.disabled = true;
+                    submitBtn.setAttribute('aria-disabled', 'true');
+                    return;
+                }
+                
+                // Password strength validation
+                if (p1.length < 8) {
+                    errorEl.textContent = 'Password must be at least 8 characters long.';
+                    errorEl.style.display = 'block';
+                    firstInput.classList.add('border-red-500');
+                    submitBtn.disabled = true;
+                    submitBtn.setAttribute('aria-disabled', 'true');
+                    return;
+                }
+                
+                if (p1 === p2) {
+                    errorEl.style.display = 'none';
+                    firstInput.classList.add('border-green-500');
+                    if (confirmInput) confirmInput.classList.add('border-green-500');
+                    submitBtn.disabled = false;
+                    submitBtn.setAttribute('aria-disabled', 'false');
+                } else {
+                    errorEl.textContent = 'Passwords do not match.';
+                    errorEl.style.display = 'block';
+                    if (confirmInput) confirmInput.classList.add('border-red-500');
+                    submitBtn.disabled = true;
+                    submitBtn.setAttribute('aria-disabled', 'true');
+                }
+            }
+
+            if (confirmInput) {
+                firstInput.addEventListener('input', validatePasswords);
+                confirmInput.addEventListener('input', validatePasswords);
+            }
+
+            // Handle form submission
+            const form = document.getElementById('change-password-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    if (submitBtn.disabled) return;
+                    
+                    // Show loading state
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span>Changing...</span>';
+                    
+                    // Submit form data
+                    const formData = new FormData(form);
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showNotification('Password changed successfully!', 'success');
+                            closeModal();
+                        } else {
+                            showNotification(data.message || 'Failed to change password. Please try again.', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification('An error occurred. Please try again.', 'error');
+                    })
+                    .finally(() => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    });
+                });
+            }
+
+            openBtn.addEventListener('click', openModal);
+            closeBtn.addEventListener('click', closeModal);
+
+            // close on backdrop click
+            modal.addEventListener('click', function(e){
+                if (e.target === modal) closeModal();
+            });
+
+            // Enhanced keyboard navigation
+            document.addEventListener('keydown', function(e){
+                if (e.key === 'Escape' && modal.classList.contains('flex')) {
+                    closeModal();
+                }
+                // Ctrl/Cmd + Enter to submit form
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && modal.classList.contains('flex') && !submitBtn.disabled) {
+                    form.dispatchEvent(new Event('submit'));
                 }
             });
 
-            // initial state
-            renderFileList(fileInput.files);
-            updateUploadButtonState();
-        })();
+            // Focus management for better accessibility
+            modal.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    const focusableElements = modal.querySelectorAll('input, button');
+                    const firstElement = focusableElements[0];
+                    const lastElement = focusableElements[focusableElements.length - 1];
+
+                    if (e.shiftKey && document.activeElement === firstElement) {
+                        e.preventDefault();
+                        lastElement.focus();
+                    } else if (!e.shiftKey && document.activeElement === lastElement) {
+                        e.preventDefault();
+                        firstElement.focus();
+                    }
+                }
+            });
+        });
     </script>
         <style>
         .filename {
