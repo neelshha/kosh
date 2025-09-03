@@ -1,0 +1,213 @@
+/* Admin Dashboard CSS - Kosh */
+
+/* Base styles and fonts */
+* { 
+    font-family: 'Sora', sans-serif; 
+}
+
+h1, h2, h3, h4, h5, h6, .title-font { 
+    font-family: 'Space Grotesk', sans-serif; 
+}
+
+/* Animations */
+@keyframes fadeIn { 
+    from { opacity: 0; } 
+    to { opacity: 1; } 
+}
+
+@keyframes slideUp { 
+    from { opacity: 0; transform: translateY(20px); } 
+    to { opacity: 1; transform: translateY(0); } 
+}
+
+@keyframes scaleIn { 
+    from { opacity: 0; transform: scale(0.95); } 
+    to { opacity: 1; transform: scale(1); } 
+}
+
+@keyframes loading {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Notion theme shadow */
+.notion-shadow { 
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2); 
+}
+
+/* Button styles */
+.btn-primary { 
+    background: #1e90ff; 
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-primary:hover { 
+    background: #0066cc; 
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(30, 144, 255, 0.4);
+}
+
+.btn-secondary { 
+    background: rgba(255, 255, 255, 0.05); 
+    transition: all 0.2s ease; 
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-secondary:hover { 
+    background: rgba(255, 255, 255, 0.1); 
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary:focus, .btn-secondary:focus {
+    outline: 2px solid #1e90ff;
+    outline-offset: 2px;
+}
+
+/* Action button styles */
+.btn-action {
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    min-height: 32px;
+}
+
+.btn-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.btn-action:focus {
+    outline: 2px solid #1e90ff;
+    outline-offset: 2px;
+}
+
+.btn-action-edit {
+    background: #1e90ff;
+    color: #ffffff;
+    border-color: #1e90ff;
+}
+
+.btn-action-edit:hover {
+    background: #0066cc;
+    color: #ffffff;
+    border-color: #0066cc;
+}
+
+.btn-action-delete {
+    background: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+}
+
+.btn-action-delete:hover {
+    background: #dc2626;
+    color: #ffffff;
+    border-color: #dc2626;
+}
+
+.btn-action-download {
+    background: #22c55e;
+    color: #ffffff;
+    border-color: #22c55e;
+}
+
+.btn-action-download:hover {
+    background: #16a34a;
+    color: #ffffff;
+    border-color: #16a34a;
+}
+
+/* Table styles */
+tbody tr:nth-child(even) { 
+    background-color: rgba(255, 255, 255, 0.02); 
+}
+
+tbody tr:hover { 
+    background-color: #252525 !important; 
+    transition: background-color 0.15s ease;
+}
+
+th { 
+    padding-top: 16px !important; 
+    padding-bottom: 16px !important; 
+}
+
+/* Input enhancements */
+input[type="text"], input[type="date"] {
+    transition: all 0.2s ease;
+}
+
+input[type="text"]:focus, input[type="date"]:focus {
+    border-color: #1e90ff;
+    box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1);
+    outline: none;
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+    accent-color: #1e90ff;
+}
+
+/* Loading state */
+.loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(30, 144, 255, 0.2), transparent);
+    animation: loading 1.5s infinite;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        min-width: 600px;
+    }
+    
+    #toast-root {
+        left: 10px !important;
+        right: 10px !important;
+        bottom: 10px !important;
+    }
+    
+    #toast-root .pointer-events-auto {
+        max-width: none !important;
+    }
+}
+
+/* Improved scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #404040;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
