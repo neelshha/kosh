@@ -17,6 +17,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -76,6 +77,57 @@
         .btn-primary:focus, .btn-secondary:focus {
             outline: 2px solid #1e90ff;
             outline-offset: 2px;
+        }
+        
+        /* Action button styles */
+        .btn-action {
+            padding: 6px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            min-height: 32px;
+        }
+        .btn-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        .btn-action:focus {
+            outline: 2px solid #1e90ff;
+            outline-offset: 2px;
+        }
+        .btn-action-edit {
+            background: #1e90ff;
+            color: #ffffff;
+            border-color: #1e90ff;
+        }
+        .btn-action-edit:hover {
+            background: #0066cc;
+            color: #ffffff;
+            border-color: #0066cc;
+        }
+        .btn-action-delete {
+            background: #ef4444;
+            color: #ffffff;
+            border-color: #ef4444;
+        }
+        .btn-action-delete:hover {
+            background: #dc2626;
+            color: #ffffff;
+            border-color: #dc2626;
+        }
+        .btn-action-download {
+            background: #22c55e;
+            color: #ffffff;
+            border-color: #22c55e;
+        }
+        .btn-action-download:hover {
+            background: #16a34a;
+            color: #ffffff;
+            border-color: #16a34a;
         }
         tbody tr:nth-child(even) { background-color: rgba(255, 255, 255, 0.02); }
         tbody tr:hover { 
@@ -168,15 +220,11 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <a href="/dashboard" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium text-notion-accent hover:text-white flex items-center space-x-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M9 6l-6 6 6 6"/>
-                        </svg>
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
                         <span>User Dashboard</span>
                     </a>
                     <a href="/logout" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium text-notion-text hover:text-white flex items-center space-x-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                        </svg>
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
                         <span>Sign out</span>
                     </a>
                 </div>
@@ -206,25 +254,19 @@
                         <div class="flex flex-wrap gap-2 items-center">
                             <button onclick="openUserModal()" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center" aria-label="Add User">
                                 <span class="inline-flex w-5 h-5 items-center justify-center mr-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                    </svg>
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
                                 </span>
                                 <span>Add User</span>
                             </button>
                             <button onclick="bulkDeleteUsers()" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center" aria-label="Bulk Delete Users">
                                 <span class="inline-flex w-5 h-5 items-center justify-center mr-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
                                 </span>
                                 <span>Bulk Delete</span>
                             </button>
                             <button type="button" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center" onclick="openBulkAttrModal()" aria-label="Bulk Set Attributes">
                                 <span class="inline-flex w-5 h-5 items-center justify-center mr-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                                    </svg>
+                                    <i data-lucide="list" class="w-4 h-4"></i>
                                 </span>
                                 <span>Bulk Set Attributes</span>
                             </button>
@@ -235,9 +277,7 @@
                             <input type="text" id="user-search" placeholder="Search users..." class="flex-1 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text" onkeyup="filterUsers()">
                             <input type="text" id="attr-filter" placeholder="Filter by attributes..." class="flex-1 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text" onkeyup="filterUsers()">
                             <button type="button" onclick="document.getElementById('user-search').value='';document.getElementById('attr-filter').value='';filterUsers();" class="btn-secondary px-3 py-2 rounded text-sm" aria-label="Clear search">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
+                                <i data-lucide="x" class="w-4 h-4"></i>
                             </button>
                         </div>
                         <div class="text-xs text-notion-text-secondary">
@@ -284,13 +324,19 @@
                                             <div class="flex flex-col sm:flex-row items-start space-y-1 sm:space-y-0 sm:space-x-2">
                                                 {# Build a safe attribute string for HTML attributes (escape single quotes) #}
                                                 {% set attr_str = attr_list|join(', ') %}
-                                                <button type="button" class="text-notion-accent hover:underline text-sm edit-user-link" 
+                                                <button type="button" class="btn-action btn-action-edit edit-user-link" 
                                                        data-user='{{ user|replace("'", "&#39;") }}' 
                                                        data-attrs='{{ attr_str|replace("'", "&#39;") }}' 
-                                                       aria-label="Edit user {{ user }}">Edit</button>
-                                                <button type="button" class="text-red-500 hover:underline text-sm delete-user-link" 
+                                                       aria-label="Edit user {{ user }}"
+                                                       title="Edit user">
+                                                    <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                                </button>
+                                                <button type="button" class="btn-action btn-action-delete delete-user-link" 
                                                        data-user='{{ user|replace("'", "&#39;") }}' 
-                                                       aria-label="Delete user {{ user }}">Delete</button>
+                                                       aria-label="Delete user {{ user }}"
+                                                       title="Delete user">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -318,16 +364,12 @@
                         </div>
                         <div class="flex flex-wrap gap-2 items-center">
                             <button onclick="openPolicyModal()" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                </svg>
+                                <i data-lucide="plus" class="w-4 h-4"></i>
                                 <span>Add Policy</span>
                             </button>
                             <button onclick="bulkDeletePolicies()" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center" aria-label="Bulk Delete Policies">
                                 <span class="inline-flex w-5 h-5 items-center justify-center mr-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
                                 </span>
                                 <span>Bulk Delete</span>
                             </button>
@@ -336,9 +378,7 @@
                     <div class="p-4 flex items-center space-x-2">
                         <input type="text" id="policy-search" placeholder="Search policies..." class="flex-1 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text" onkeyup="filterPolicies()">
                         <button type="button" onclick="document.getElementById('policy-search').value='';filterPolicies();" class="btn-secondary px-3 py-2 rounded text-sm" aria-label="Clear search">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
+                            <i data-lucide="x" class="w-4 h-4"></i>
                         </button>
                     </div>
                     <div class="p-6 flex-1 overflow-x-auto">
@@ -378,14 +418,16 @@
                                         </td>
                                         <td class="px-4 py-3">
                                             <div class="flex flex-col sm:flex-row items-start space-y-1 sm:space-y-0 sm:space-x-2">
-                                                <button type="button" class="text-notion-accent hover:underline text-sm edit-policy-link" 
+                                                <button type="button" class="btn-action btn-action-edit edit-policy-link" 
                                                     data-file="{{ file }}" 
                                                     data-policy="{{ policy_obj.policy or '' }}" 
-                                                    aria-label="Edit policy for {{ file }}">
-                                                    Edit
+                                                    aria-label="Edit policy for {{ file }}"
+                                                    title="Edit policy">
+                                                    <i data-lucide="edit-2" class="w-4 h-4"></i>
                                                 </button>
-                                                <button type="button" class="text-red-500 hover:underline text-sm" onclick="if(confirm('Delete policy?')) deletePolicy('{{ file }}'); return false;" aria-label="Delete policy for {{ file }}">Delete</button>
-                                                <button type="button" onclick="previewPolicyAccess('{{ file }}')" class="text-green-400 hover:underline text-sm" title="Preview access" aria-label="Preview access for {{ file }}">Preview</button>
+                                                <button type="button" class="btn-action btn-action-delete" onclick="if(confirm('Delete policy?')) deletePolicy('{{ file }}'); return false;" aria-label="Delete policy for {{ file }}" title="Delete policy">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -432,8 +474,12 @@
                                     <td class="px-4 py-3 text-notion-text-secondary">{{ file.upload_date }}</td>
                                     <td class="px-4 py-3">
                                         <div class="flex flex-col sm:flex-row items-start space-y-1 sm:space-y-0 sm:space-x-2">
-                                            <a href="/download/{{ file.name }}" class="text-notion-accent hover:underline text-sm" aria-label="Download {{ file.name }}">Download</a>
-                                            <button type="button" onclick="if(confirm('Delete file?')) deleteFile('{{ file.name }}'); return false;" class="text-red-500 hover:underline text-sm" aria-label="Delete {{ file.name }}">Delete</button>
+                                            <a href="/download/{{ file.name }}" class="btn-action btn-action-download" aria-label="Download {{ file.name }}" title="Download file">
+                                                <i data-lucide="download" class="w-4 h-4"></i>
+                                            </a>
+                                            <button type="button" onclick="if(confirm('Delete file?')) deleteFile('{{ file.name }}'); return false;" class="btn-action btn-action-delete" aria-label="Delete {{ file.name }}" title="Delete file">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -515,7 +561,7 @@
             </div>
         </div>
     </main>
-<!-- Modals for Add/Edit User, Policy, Bulk Actions, Preview, etc. -->
+<!-- Modals for Add/Edit User, Policy, Bulk Actions, etc. -->
 <div id="modal-root"></div>
 <div id="toast-root" class="fixed bottom-6 right-6 z-50 space-y-2 pointer-events-none"></div>
 <script>
@@ -700,9 +746,13 @@ function openUserModal() {
                 attrsTd.textContent = attrs;
                 const actionsTd = document.createElement('td');
                 actionsTd.className = 'px-4 py-2';
-                actionsTd.innerHTML = `<div class="flex flex-col items-start space-y-1">
-                    <a href="javascript:void(0)" class="text-notion-accent hover:underline edit-user-link" data-user='${user.replace(/'/g, "&#39;")}' data-attrs='${attrs.replace(/'/g, "&#39;")}' aria-label="Edit user ${user}">Edit</a>
-                    <a href="javascript:void(0)" class="text-red-500 hover:underline delete-user-link" data-user='${user.replace(/'/g, "&#39;")}' aria-label="Delete user ${user}">Delete</a>
+                actionsTd.innerHTML = `<div class="flex flex-col sm:flex-row items-start space-y-1 sm:space-y-0 sm:space-x-2">
+                    <button type="button" class="btn-action btn-action-edit edit-user-link" data-user='${user.replace(/'/g, "&#39;")}' data-attrs='${attrs.replace(/'/g, "&#39;")}' aria-label="Edit user ${user}" title="Edit user">
+                        <i data-lucide="edit-2" class="w-4 h-4"></i>
+                    </button>
+                    <button type="button" class="btn-action btn-action-delete delete-user-link" data-user='${user.replace(/'/g, "&#39;")}' aria-label="Delete user ${user}" title="Delete user">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
                 </div>`;
                 tr.appendChild(checkboxTd);
                 tr.appendChild(userTd);
@@ -713,6 +763,7 @@ function openUserModal() {
                 setupAdminLinks();
                 closeModal();
                 showToast('User added', 'success');
+                setTimeout(reinitializeLucideIcons, 10);
             } else {
                 showToast('Error adding user', 'error');
             }
@@ -982,10 +1033,10 @@ function showToast(message, type = 'success') {
     };
     
     const icons = {
-        success: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>',
-        error: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>',
-        warning: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
-        info: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>'
+        success: '<i data-lucide="check-circle" class="w-5 h-5"></i>',
+        error: '<i data-lucide="x-circle" class="w-5 h-5"></i>',
+        warning: '<i data-lucide="alert-triangle" class="w-5 h-5"></i>',
+        info: '<i data-lucide="info" class="w-5 h-5"></i>'
     };
     
     const color = colors[type] || colors.success;
@@ -999,7 +1050,7 @@ function showToast(message, type = 'success') {
         <div class="flex-shrink-0">${icon}</div>
         <div class="flex-1 text-sm font-medium">${message}</div>
         <button onclick="this.parentElement.remove()" class="flex-shrink-0 ml-2 text-white/80 hover:text-white">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+            <i data-lucide="x" class="w-4 h-4"></i>
         </button>
     `;
     
@@ -1062,9 +1113,6 @@ if (document.readyState === 'loading') {
     // Initialize status indicators
     filterUsers();
     filterPolicies();
-}
-function previewPolicyAccess(file) {
-    showModal(`<h3 class='text-lg font-bold mb-2'>Preview Access</h3><div>Users who match policy for <b>${file}</b> (not implemented)</div>`);
 }
 function deleteFile(filename) {
     fetch('/admin/delete_file', {
@@ -1178,6 +1226,39 @@ setTimeout(() => {
 <script>
 // Make allAttributes available globally for modals
 window.allAttributes = {{ all_attributes|tojson|safe }};
+</script>
+<script>
+// Initialize Lucide icons
+document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+});
+
+// Re-initialize icons when new content is added via JavaScript
+function reinitializeLucideIcons() {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+// Store original functions
+const _originalShowModal = window.showModal;
+const _originalShowToast = window.showToast;
+
+// Override the showModal function to reinitialize icons
+if (typeof _originalShowModal === 'function') {
+    window.showModal = function(html) {
+        _originalShowModal(html);
+        setTimeout(reinitializeLucideIcons, 10);
+    };
+}
+
+// Override the showToast function to reinitialize icons  
+if (typeof _originalShowToast === 'function') {
+    window.showToast = function(message, type = 'success') {
+        _originalShowToast(message, type);
+        setTimeout(reinitializeLucideIcons, 10);
+    };
+}
 </script>
 </body>
 </html>
