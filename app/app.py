@@ -452,7 +452,11 @@ def admin_add_user():
         except Exception:
             users = {}
 
-        users[user_id] = attributes
+        # Create user with default password 'pass' and the specified attributes
+        users[user_id] = {
+            'attributes': attributes,
+            'password': 'pass'
+        }
         try:
             with open(USERS_FILE, 'w') as f:
                 json.dump(users, f, indent=2)
@@ -494,7 +498,22 @@ def admin_edit_user(user_id):
             return jsonify(success=False, error=err), 400
 
         old_attrs = users.get(user_id, [])
-        users[user_id] = attributes
+        
+        # Preserve the dictionary structure with password
+        if isinstance(users.get(user_id), dict):
+            # User exists as dictionary, update attributes but keep password
+            existing_password = users[user_id].get('password', 'pass')
+            users[user_id] = {
+                'attributes': attributes,
+                'password': existing_password
+            }
+        else:
+            # User exists as array (legacy format), convert to new format with default password
+            users[user_id] = {
+                'attributes': attributes,
+                'password': 'pass'
+            }
+        
         try:
             with open(USERS_FILE, 'w') as f:
                 json.dump(users, f, indent=2)
@@ -512,7 +531,15 @@ def admin_edit_user(user_id):
         if is_ajax:
             return jsonify(success=True)
         return redirect(url_for('admin_dashboard'))
-    attrs = ','.join(users.get(user_id, []))
+    
+    # Get user attributes, handling both dictionary and array formats
+    user_data = users.get(user_id, [])
+    if isinstance(user_data, dict):
+        attrs = user_data.get('attributes', [])
+    else:
+        attrs = user_data
+    attrs = ','.join(attrs)
+    
     return render_template('admin_edit_user.html', user_id=user_id, attributes=attrs)
 
 @app.route('/admin/delete_user/<user_id>')
