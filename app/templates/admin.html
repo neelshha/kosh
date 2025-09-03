@@ -54,17 +54,97 @@
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .notion-shadow { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2); }
-        .btn-primary { background: #1e90ff; transition: none; }
-        .btn-primary:hover { background: #0066cc; }
-        .btn-secondary { background: rgba(255, 255, 255, 0.05); transition: none; }
-        .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); }
+        .btn-primary { 
+            background: #1e90ff; 
+            transition: all 0.2s ease;
+            border: none;
+        }
+        .btn-primary:hover { 
+            background: #0066cc; 
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30, 144, 255, 0.4);
+        }
+        .btn-secondary { 
+            background: rgba(255, 255, 255, 0.05); 
+            transition: all 0.2s ease; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-secondary:hover { 
+            background: rgba(255, 255, 255, 0.1); 
+            border-color: rgba(255, 255, 255, 0.2);
+        }
         .btn-primary:focus, .btn-secondary:focus {
             outline: 2px solid #1e90ff;
             outline-offset: 2px;
         }
-        tbody tr:nth-child(even) { background-color: #181818; }
-        tbody tr:hover { background-color: #252525; }
-        th { padding-top: 24px !important; padding-bottom: 24px !important; }
+        tbody tr:nth-child(even) { background-color: rgba(255, 255, 255, 0.02); }
+        tbody tr:hover { 
+            background-color: #252525 !important; 
+            transition: background-color 0.15s ease;
+        }
+        th { padding-top: 16px !important; padding-bottom: 16px !important; }
+        
+        /* Input enhancements */
+        input[type="text"], input[type="date"] {
+            transition: all 0.2s ease;
+        }
+        input[type="text"]:focus, input[type="date"]:focus {
+            border-color: #1e90ff;
+            box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1);
+            outline: none;
+        }
+        
+        /* Checkbox styling */
+        input[type="checkbox"] {
+            accent-color: #1e90ff;
+        }
+        
+        /* Loading state */
+        .loading {
+            position: relative;
+            overflow: hidden;
+        }
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(30, 144, 255, 0.2), transparent);
+            animation: loading 1.5s infinite;
+        }
+        @keyframes loading {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        /* Responsive table */
+        @media (max-width: 768px) {
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            table {
+                min-width: 600px;
+            }
+        }
+        
+        /* Improved scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #404040;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
     </style>
 </head>
 <body class="bg-notion-bg text-notion-text font-content min-h-screen">
@@ -79,8 +159,7 @@
                     <h1 class="text-xl font-semibold text-notion-text font-title">Kosh Admin</h1>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <a href="/dashboard" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium text-notion-accent hover:text-white flex items-center" style="gap:.5rem;">
-                    <a href="/dashboard" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium text-notion-accent hover:text-white flex items-center" style="gap:.5rem;">
+                    <a href="/dashboard" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium text-notion-accent hover:text-white flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M9 6l-6 6 6 6"/>
                         </svg>
@@ -103,8 +182,8 @@
             <h2 class="text-3xl font-bold text-notion-text mb-2 font-title">Admin Dashboard</h2>
             <p class="text-notion-text-secondary text-lg font-content">Manage all users, attributes, and file policies on the network.</p>
         </div>
-    <div class="flex flex-col gap-8">
-    <div class="flex flex-col gap-8">
+        
+        <div class="flex flex-col gap-8">
             <!-- Users Section -->
             <section class="h-full flex flex-col mb-8">
                 <div class="bg-notion-card border border-notion-border rounded-xl notion-shadow animate-scale-in h-full flex flex-col">
@@ -123,40 +202,16 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                     </svg>
                                 </span>
-                        <div class="flex flex-wrap gap-2 items-center">
-                            <button onclick="openUserModal()" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center" aria-label="Add User">
+                                <span>Add User</span>
+                            </button>
+                            <button onclick="bulkDeleteUsers()" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center" aria-label="Bulk Delete Users">
                                 <span class="inline-flex w-5 h-5 items-center justify-center mr-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                     </svg>
                                 </span>
-                                <span>Add User</span>
-                            <script>
-                            // All admin JS code
-                            function showModal(html) {
-                                const root = document.getElementById('modal-root');
-                                root.innerHTML = `<div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50" onclick="closeModal(event)">
-                                    <div class="bg-notion-card p-6 rounded-xl shadow-xl min-w-[320px] max-w-lg relative animate-fade-in" onclick="event.stopPropagation();">
-                                        <button onclick="closeModal()" class="absolute top-2 right-2 text-notion-text-secondary">&times;</button>
-                                        ${html}
-                                    </div>
-                                </div>`;
-                            }
-                            function closeModal(e) {
-                                if (!e || e.target === e.currentTarget) {
-                                    document.getElementById('modal-root').innerHTML = '';
-                                }
-                            }
-                            // ...existing JS code...
-                            </script>
                                 <span>Bulk Delete</span>
                             </button>
-                            <button type="button" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center" onclick="openBulkAttrModal()" aria-label="Bulk Set Attributes">
-                                <span class="inline-flex w-5 h-5 items-center justify-center mr-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                                    </svg>
-                                </span>
                             <button type="button" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center" onclick="openBulkAttrModal()" aria-label="Bulk Set Attributes">
                                 <span class="inline-flex w-5 h-5 items-center justify-center mr-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -167,57 +222,77 @@
                             </button>
                         </div>
                     </div>
-                    <div class="p-4 flex items-center space-x-2">
-                        <input type="text" id="user-search" placeholder="Search users..." class="w-full px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text mb-2" onkeyup="filterUsers()">
-                        <button type="button" onclick="document.getElementById('user-search').value='';document.getElementById('attr-filter').value='';filterUsers();" class="btn-secondary px-2 py-2 rounded text-sm" aria-label="Clear search">
-                        <button type="button" onclick="document.getElementById('user-search').value='';document.getElementById('attr-filter').value='';filterUsers();" class="btn-secondary px-2 py-2 rounded text-sm" aria-label="Clear search">
-                            &#10006;
-                        </button>
+                    <div class="p-4 flex flex-col gap-2">
+                        <div class="flex items-center space-x-2">
+                            <input type="text" id="user-search" placeholder="Search users..." class="flex-1 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text" onkeyup="filterUsers()">
+                            <input type="text" id="attr-filter" placeholder="Filter by attributes..." class="flex-1 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text" onkeyup="filterUsers()">
+                            <button type="button" onclick="document.getElementById('user-search').value='';document.getElementById('attr-filter').value='';filterUsers();" class="btn-secondary px-3 py-2 rounded text-sm" aria-label="Clear search">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="text-xs text-notion-text-secondary">
+                            <span class="mr-4">💡 Tip: Use Ctrl+K to focus search</span>
+                            <span id="user-count-status">Showing all users</span>
+                        </div>
                     </div>
                     <div class="p-6 flex-1 overflow-x-auto">
                         <form id="user-bulk-form">
-                        <table class="min-w-full divide-y divide-notion-border" id="users-table">
-                            <thead>
-                                <tr>
-                                    <th class="px-2"><input type="checkbox" onclick="toggleAllUsers(this)" aria-label="Select all users"></th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">User</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Attributes</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-notion-border">
-                                {% for user, attrs in users.items() %}
-                                <tr class="hover:bg-notion-hover transition">
-                                    <td class="px-2"><input type="checkbox" name="user_bulk" value="{{ user }}" aria-label="Select user {{ user }}"></td>
-                                    <td class="px-4 py-2 font-medium">{{ user }}</td>
-                                    {# Normalize different user value shapes: dict with 'attributes', list, or string #}
-                                    {# Normalize attrs into a list robustly #}
-                                    {% if attrs is mapping %}
-                                        {% set attr_list = attrs.get('attributes') if attrs.get('attributes') is not none else attrs %}
-                                    {% elif attrs is string %}
-                                        {% set attr_list = [attrs] %}
-                                    {% else %}
-                                        {% set attr_list = attrs or [] %}
-                                    {% endif %}
-                                    <td class="px-4 py-2">{{ attr_list|join(', ') }}</td>
-                                    <td class="px-4 py-2">
-                                        <div class="flex flex-col items-start space-y-1">
-                                            {# Build a safe attribute string for HTML attributes (escape single quotes) #}
-                                            {% set attr_str = attr_list|join(', ') %}
-                                            <a href="javascript:void(0)" class="text-notion-accent hover:underline edit-user-link" 
-                                               data-user='{{ user|replace("'", "&#39;") }}' 
-                                               data-attrs='{{ attr_str|replace("'", "&#39;") }}' 
-                                               aria-label="Edit user {{ user }}">Edit</a>
-                                            <a href="javascript:void(0)" class="text-red-500 hover:underline delete-user-link" 
-                                               data-user='{{ user|replace("'", "&#39;") }}' 
-                                               aria-label="Delete user {{ user }}">Delete</a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        <div id="user-no-results" class="text-notion-text-secondary text-center py-4 hidden">No users found.</div>
+                            <table class="min-w-full divide-y divide-notion-border" id="users-table">
+                                <thead>
+                                    <tr>
+                                        <th class="px-2 py-3 text-left">
+                                            <input type="checkbox" onclick="toggleAllUsers(this)" aria-label="Select all users" class="rounded border-notion-border bg-notion-input">
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">User</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Attributes</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-notion-border" id="users-tbody">
+                                    {% for user, attrs in users.items() %}
+                                    <tr class="hover:bg-notion-hover transition-colors duration-150">
+                                        <td class="px-2 py-3">
+                                            <input type="checkbox" name="user_bulk" value="{{ user }}" aria-label="Select user {{ user }}" class="rounded border-notion-border bg-notion-input">
+                                        </td>
+                                        <td class="px-4 py-3 font-medium text-notion-text">{{ user }}</td>
+                                        {# Normalize different user value shapes: dict with 'attributes', list, or string #}
+                                        {% if attrs is mapping %}
+                                            {% set attr_list = attrs.get('attributes') if attrs.get('attributes') is not none else attrs %}
+                                        {% elif attrs is string %}
+                                            {% set attr_list = [attrs] %}
+                                        {% else %}
+                                            {% set attr_list = attrs or [] %}
+                                        {% endif %}
+                                        <td class="px-4 py-3">
+                                            <div class="flex flex-wrap gap-1">
+                                                {% for attr in attr_list %}
+                                                <span class="inline-flex px-2 py-1 text-xs rounded-full bg-notion-accent/20 text-notion-accent">{{ attr }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <div class="flex flex-col sm:flex-row items-start space-y-1 sm:space-y-0 sm:space-x-2">
+                                                {# Build a safe attribute string for HTML attributes (escape single quotes) #}
+                                                {% set attr_str = attr_list|join(', ') %}
+                                                <button type="button" class="text-notion-accent hover:underline text-sm edit-user-link" 
+                                                       data-user='{{ user|replace("'", "&#39;") }}' 
+                                                       data-attrs='{{ attr_str|replace("'", "&#39;") }}' 
+                                                       aria-label="Edit user {{ user }}">Edit</button>
+                                                <button type="button" class="text-red-500 hover:underline text-sm delete-user-link" 
+                                                       data-user='{{ user|replace("'", "&#39;") }}' 
+                                                       aria-label="Delete user {{ user }}">Delete</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <div id="user-no-results" class="text-notion-text-secondary text-center py-8 hidden">
+                                <div class="text-lg mb-2">No users found</div>
+                                <div class="text-sm">Try adjusting your search criteria</div>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -225,7 +300,7 @@
             <!-- Policies Section -->
             <section class="h-full flex flex-col mb-8">
                 <div class="bg-notion-card border border-notion-border rounded-xl notion-shadow animate-scale-in h-full flex flex-col">
-                    <div class="p-6 border-b border-notion-border flex items-center justify-between">
+                    <div class="p-6 border-b border-notion-border flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
                             <h3 class="text-xl font-semibold text-notion-text font-title flex items-center">
                                 File Policies
@@ -233,64 +308,86 @@
                             </h3>
                             <p class="text-notion-text-secondary text-sm mt-1">Set and manage file access policies.</p>
                         </div>
-                        <button onclick="openPolicyModal()" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            <span>Add Policy</span>
-                        </button>
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <button onclick="openPolicyModal()" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium flex items-center space-x-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                <span>Add Policy</span>
+                            </button>
+                            <button onclick="bulkDeletePolicies()" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center" aria-label="Bulk Delete Policies">
+                                <span class="inline-flex w-5 h-5 items-center justify-center mr-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </span>
+                                <span>Bulk Delete</span>
+                            </button>
+                        </div>
                     </div>
                     <div class="p-4 flex items-center space-x-2">
-                        <input type="text" id="policy-search" placeholder="Search policies..." class="w-full px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text mb-2" onkeyup="filterPolicies()">
-                        <button type="button" onclick="document.getElementById('policy-search').value='';filterPolicies();" class="btn-secondary px-2 py-2 rounded text-sm" aria-label="Clear search">
-                            &#10006;
+                        <input type="text" id="policy-search" placeholder="Search policies..." class="flex-1 px-3 py-2 rounded border border-notion-border bg-notion-input text-notion-text" onkeyup="filterPolicies()">
+                        <button type="button" onclick="document.getElementById('policy-search').value='';filterPolicies();" class="btn-secondary px-3 py-2 rounded text-sm" aria-label="Clear search">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
                         </button>
                     </div>
                     <div class="p-6 flex-1 overflow-x-auto">
                         <form id="policy-bulk-form">
-                        <table class="min-w-full divide-y divide-notion-border" id="policies-table">
-                            <thead>
-                                <tr>
-                                    <th class="px-2"><input type="checkbox" onclick="toggleAllPolicies(this)" aria-label="Select all policies"></th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">File</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Policy</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Key</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-notion-border">
-                                {% for file, policy_obj in policies.items() %}
-                                <tr class="hover:bg-notion-hover transition">
-                                    <td class="px-2"><input type="checkbox" name="policy_bulk" value="{{ file }}" aria-label="Select policy for {{ file }}"></td>
-                                    <td class="px-4 py-2 font-medium">{{ file }}</td>
-                                    <td class="px-4 py-2">{{ policy_obj.policy if policy_obj.policy else '' }}</td>
-                                       <td class="px-4 py-2"></td>
-                                       <td class="px-4 py-2"></td>
-                                    <td class="px-4 py-2">
-                                        <div class="flex flex-col items-start space-y-1">
-                                                          <a href="javascript:void(0)" class="text-notion-accent hover:underline edit-policy-link" 
-                                                              data-file="{{ file }}" 
-                                                              data-policy="{{ policy_obj.policy or '' }}" 
-                                                              aria-label="Edit policy for {{ file }}">
-                                                              Edit
-                                                          </a>
-                                            <a href="javascript:void(0)" class="text-red-500 hover:underline" onclick="if(confirm('Delete policy?')) deletePolicy('{{ file }}'); return false;" aria-label="Delete policy for {{ file }}">Delete</a>
-                                            <a href="javascript:void(0)" onclick="previewPolicyAccess('{{ file }}')" class="text-green-400 hover:underline" title="Preview access" aria-label="Preview access for {{ file }}">Preview</a>
-                                                          <a href="javascript:void(0)" class="text-notion-accent hover:underline edit-policy-link" 
-                                                              data-file="{{ file }}" 
-                                                              data-policy="{{ policy_obj.policy or '' }}" 
-                                                              aria-label="Edit policy for {{ file }}">
-                                                              Edit
-                                                          </a>
-                                            <a href="javascript:void(0)" class="text-red-500 hover:underline" onclick="if(confirm('Delete policy?')) deletePolicy('{{ file }}'); return false;" aria-label="Delete policy for {{ file }}">Delete</a>
-                                            <a href="javascript:void(0)" onclick="previewPolicyAccess('{{ file }}')" class="text-green-400 hover:underline" title="Preview access" aria-label="Preview access for {{ file }}">Preview</a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        <div id="policy-no-results" class="text-notion-text-secondary text-center py-4 hidden">No policies found.</div>
+                            <table class="min-w-full divide-y divide-notion-border" id="policies-table">
+                                <thead>
+                                    <tr>
+                                        <th class="px-2 py-3 text-left">
+                                            <input type="checkbox" onclick="toggleAllPolicies(this)" aria-label="Select all policies" class="rounded border-notion-border bg-notion-input">
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">File</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Policy</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Key</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-notion-border">
+                                    {% for file, policy_obj in policies.items() %}
+                                    <tr class="hover:bg-notion-hover transition-colors duration-150">
+                                        <td class="px-2 py-3">
+                                            <input type="checkbox" name="policy_bulk" value="{{ file }}" aria-label="Select policy for {{ file }}" class="rounded border-notion-border bg-notion-input">
+                                        </td>
+                                        <td class="px-4 py-3 font-medium text-notion-text">{{ file }}</td>
+                                        <td class="px-4 py-3">
+                                            {% if policy_obj.policy %}
+                                                <div class="flex flex-wrap gap-1">
+                                                    {% for attr in policy_obj.policy.split(',') %}
+                                                    <span class="inline-flex px-2 py-1 text-xs rounded-full bg-notion-accent/20 text-notion-accent">{{ attr.strip() }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <span class="text-notion-text-secondary italic">No policy set</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-4 py-3 text-notion-text-secondary">
+                                            {{ policy_obj.key if policy_obj.key else 'Auto-generated' }}
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <div class="flex flex-col sm:flex-row items-start space-y-1 sm:space-y-0 sm:space-x-2">
+                                                <button type="button" class="text-notion-accent hover:underline text-sm edit-policy-link" 
+                                                    data-file="{{ file }}" 
+                                                    data-policy="{{ policy_obj.policy or '' }}" 
+                                                    aria-label="Edit policy for {{ file }}">
+                                                    Edit
+                                                </button>
+                                                <button type="button" class="text-red-500 hover:underline text-sm" onclick="if(confirm('Delete policy?')) deletePolicy('{{ file }}'); return false;" aria-label="Delete policy for {{ file }}">Delete</button>
+                                                <button type="button" onclick="previewPolicyAccess('{{ file }}')" class="text-green-400 hover:underline text-sm" title="Preview access" aria-label="Preview access for {{ file }}">Preview</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <div id="policy-no-results" class="text-notion-text-secondary text-center py-8 hidden">
+                                <div class="text-lg mb-2">No policies found</div>
+                                <div class="text-sm">Try adjusting your search criteria</div>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -311,38 +408,43 @@
                         <table class="min-w-full divide-y divide-notion-border">
                             <thead>
                                 <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">File Name</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Size</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Owner</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Upload Date</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Actions</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">File Name</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Size</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Owner</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Upload Date</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-notion-text-secondary uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-notion-border">
                                 {% for file in all_files %}
-                                <tr class="hover:bg-notion-hover transition">
-                                    <td class="px-4 py-2 font-medium">{{ file.name }}</td>
-                                    <td class="px-4 py-2">{{ file.size }}</td>
-                                    <td class="px-4 py-2">{{ file.owner }}</td>
-                                    <td class="px-4 py-2">{{ file.upload_date }}</td>
-                                    <td class="px-4 py-2">
-                                        <div class="flex flex-col items-start space-y-1">
-                                            <a href="/download/{{ file.name }}" class="text-notion-accent hover:underline" aria-label="Download {{ file.name }}">Download</a>
-                                            <a href="javascript:void(0)" onclick="if(confirm('Delete file?')) deleteFile('{{ file.name }}'); return false;" class="text-red-500 hover:underline" aria-label="Delete {{ file.name }}">Delete</a>
-                                            <a href="javascript:void(0)" onclick="if(confirm('Delete file?')) deleteFile('{{ file.name }}'); return false;" class="text-red-500 hover:underline" aria-label="Delete {{ file.name }}">Delete</a>
+                                <tr class="hover:bg-notion-hover transition-colors duration-150">
+                                    <td class="px-4 py-3 font-medium text-notion-text">{{ file.name }}</td>
+                                    <td class="px-4 py-3 text-notion-text-secondary">{{ file.size }}</td>
+                                    <td class="px-4 py-3 text-notion-text-secondary">{{ file.owner }}</td>
+                                    <td class="px-4 py-3 text-notion-text-secondary">{{ file.upload_date }}</td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex flex-col sm:flex-row items-start space-y-1 sm:space-y-0 sm:space-x-2">
+                                            <a href="/download/{{ file.name }}" class="text-notion-accent hover:underline text-sm" aria-label="Download {{ file.name }}">Download</a>
+                                            <button type="button" onclick="if(confirm('Delete file?')) deleteFile('{{ file.name }}'); return false;" class="text-red-500 hover:underline text-sm" aria-label="Delete {{ file.name }}">Delete</button>
                                         </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="px-4 py-8 text-center text-notion-text-secondary">
+                                        <div class="text-lg mb-2">No files uploaded yet</div>
+                                        <div class="text-sm">Files will appear here once uploaded</div>
                                     </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
-                        <div id="file-no-results" class="text-notion-text-secondary text-center py-4 hidden">No files found.</div>
                     </div>
                 </div>
             </section>
         </div>
-    <div class="mt-12 flex flex-col gap-8">
-    <div class="mt-12 flex flex-col gap-8">
+        
+        <div class="mt-12 flex flex-col gap-8">
             <!-- Audit Logs -->
             <div class="bg-notion-card border border-notion-border rounded-xl notion-shadow p-6">
                 <h4 class="text-lg font-semibold text-notion-text font-title mb-2">Audit Logs</h4>
@@ -389,7 +491,7 @@
                     </div>
                     <div class="flex flex-wrap gap-3 mt-2">
                         {% for attr in all_attributes %}
-                        <span class="bg-notion-accent text-white px-4 py-2 rounded-full flex items-center shadow-sm transition-all duration-150 hover:bg-notion-accent-hover">
+                        <span class="bg-notion-accent/20 text-notion-accent px-3 py-2 rounded-full flex items-center shadow-sm transition-all duration-150 hover:bg-notion-accent/30">
                             <span class="mr-2">{{ attr }}</span>
                             <button type="button"
                                 class="ml-1 px-2 py-1 rounded-full bg-notion-card text-notion-text-secondary hover:bg-notion-hover hover:text-white transition"
@@ -412,28 +514,51 @@
 try {
     // Utility: Show modal
     function showModal(html) {
-    const root = document.getElementById('modal-root');
-    root.innerHTML = `<div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50" onclick="closeModal(event)">
-        <div class="bg-notion-card p-6 rounded-xl shadow-xl min-w-[320px] max-w-lg relative animate-fade-in" onclick="event.stopPropagation();">
-            <button onclick="closeModal()" class="absolute top-2 right-2 text-notion-text-secondary">&times;</button>
-            ${html}
-        </div>
-    </div>`;
-}
-function closeModal(e) {
-    if (!e || e.target === e.currentTarget) {
-        document.getElementById('modal-root').innerHTML = '';
+        const root = document.getElementById('modal-root');
+        root.innerHTML = `<div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50" onclick="closeModal(event)">
+            <div class="bg-notion-card p-6 rounded-xl shadow-xl min-w-[320px] max-w-lg relative animate-fade-in" onclick="event.stopPropagation();">
+                <button onclick="closeModal()" class="absolute top-2 right-2 text-notion-text-secondary hover:text-notion-text text-xl leading-none">&times;</button>
+                ${html}
+            </div>
+        </div>`;
     }
-}
+
+    function closeModal(e) {
+        if (!e || e.target === e.currentTarget) {
+            document.getElementById('modal-root').innerHTML = '';
+        }
+    }
+
+    // Utility: Show loading state
+    function showLoading(element, text = 'Loading...') {
+        if (element) {
+            element.style.opacity = '0.6';
+            element.style.pointerEvents = 'none';
+            element.setAttribute('data-original-text', element.textContent);
+            element.textContent = text;
+        }
+    }
+
+    function hideLoading(element) {
+        if (element) {
+            element.style.opacity = '1';
+            element.style.pointerEvents = 'auto';
+            const originalText = element.getAttribute('data-original-text');
+            if (originalText) {
+                element.textContent = originalText;
+                element.removeAttribute('data-original-text');
+            }
+        }
+    }
 
 // User search/filter
 function filterUsers() {
     const input = document.getElementById('user-search').value.toLowerCase();
-    // support comma-separated attribute filters (e.g. "a, b") and require all tokens to match
-    const attrFilter = document.getElementById('attr-filter').value.toLowerCase();
-    // support comma-separated attribute filters (e.g. "a, b") and require all tokens to match
     const attrFilter = document.getElementById('attr-filter').value.toLowerCase();
     const rows = document.querySelectorAll('#users-table tbody tr');
+    const totalCount = rows.length;
+    let visibleCount = 0;
+    
     rows.forEach(row => {
         const user = row.children[1].textContent.toLowerCase();
         const attrs = row.children[2].textContent.toLowerCase();
@@ -442,14 +567,32 @@ function filterUsers() {
         const rowAttrs = attrs.split(',').map(s => s.trim()).filter(Boolean);
         const filterTokens = attrFilter.split(',').map(s => s.trim()).filter(Boolean);
         const matchesAttr = filterTokens.length === 0 || filterTokens.every(tok => rowAttrs.includes(tok));
-        row.style.display = (matchesText && matchesAttr) ? '' : 'none';
-        const matchesText = user.includes(input) || attrs.includes(input);
-        // compute attribute tokens from the row and from the filter
-        const rowAttrs = attrs.split(',').map(s => s.trim()).filter(Boolean);
-        const filterTokens = attrFilter.split(',').map(s => s.trim()).filter(Boolean);
-        const matchesAttr = filterTokens.length === 0 || filterTokens.every(tok => rowAttrs.includes(tok));
-        row.style.display = (matchesText && matchesAttr) ? '' : 'none';
+        const shouldShow = (matchesText && matchesAttr);
+        
+        row.style.display = shouldShow ? '' : 'none';
+        if (shouldShow) visibleCount++;
     });
+    
+    // Update no results display
+    const noResults = document.getElementById('user-no-results');
+    const table = document.getElementById('users-table');
+    if (visibleCount === 0) {
+        table.style.display = 'none';
+        noResults.style.display = 'block';
+    } else {
+        table.style.display = 'table';
+        noResults.style.display = 'none';
+    }
+    
+    // Update status indicator
+    const status = document.getElementById('user-count-status');
+    if (status) {
+        if (input || attrFilter) {
+            status.textContent = `Showing ${visibleCount} of ${totalCount} users`;
+        } else {
+            status.textContent = `Showing all ${totalCount} users`;
+        }
+    }
 }
 function toggleAllUsers(source) {
     document.querySelectorAll('input[name="user_bulk"]').forEach(cb => cb.checked = source.checked);
@@ -578,7 +721,7 @@ function openEditUserModal(user, attrs) {
     let buttons = '';
     allAttributes.forEach(attr => {
         const selected = selectedAttrs.includes(attr) ? 'selected' : '';
-        buttons += `<button type='button' class='attr-btn px-3 py-2 rounded-full mr-2 mb-2 ${selected ? 'bg-notion-accent text-white' : 'bg-notion-card text-notion-text-secondary'}' data-attr='${attr.replace(/'/g, "&#39;")}' aria-pressed='${selected ? 'true' : 'false'}'>${attr}</button>`;
+        buttons += `<button type='button' class='attr-btn px-2 py-1 text-xs rounded-full mr-2 mb-2 ${selected ? 'bg-notion-accent/20 text-notion-accent' : 'bg-notion-card text-notion-text-secondary'}' data-attr='${attr.replace(/'/g, "&#39;")}' aria-pressed='${selected ? 'true' : 'false'}'>${attr}</button>`;
     });
     const target = '/admin/edit_user/' + encodeURIComponent(user);
     showModal(`<h3 class='text-lg font-bold mb-2'>Edit User</h3>
@@ -590,16 +733,16 @@ function openEditUserModal(user, attrs) {
     // Toggle button selection
     document.querySelectorAll('.attr-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            this.classList.toggle('bg-notion-accent');
-            this.classList.toggle('text-white');
+            this.classList.toggle('bg-notion-accent/20');
+            this.classList.toggle('text-notion-accent');
             this.classList.toggle('bg-notion-card');
             this.classList.toggle('text-notion-text-secondary');
-            this.setAttribute('aria-pressed', this.classList.contains('bg-notion-accent') ? 'true' : 'false');
+            this.setAttribute('aria-pressed', this.classList.contains('bg-notion-accent/20') ? 'true' : 'false');
         });
     });
     document.getElementById('edit-user-form').onsubmit = function(e) {
         e.preventDefault();
-        const selected = Array.from(document.querySelectorAll('.attr-btn.bg-notion-accent')).map(btn => btn.getAttribute('data-attr'));
+        const selected = Array.from(document.querySelectorAll('.attr-btn.bg-notion-accent\\/20')).map(btn => btn.getAttribute('data-attr'));
         fetch(target, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
@@ -636,11 +779,27 @@ function openEditUserModal(user, attrs) {
 function filterPolicies() {
     const input = document.getElementById('policy-search').value.toLowerCase();
     const rows = document.querySelectorAll('#policies-table tbody tr');
+    let visibleCount = 0;
+    
     rows.forEach(row => {
         const file = row.children[1].textContent.toLowerCase();
         const policy = row.children[2].textContent.toLowerCase();
-        row.style.display = (file.includes(input) || policy.includes(input)) ? '' : 'none';
+        const shouldShow = file.includes(input) || policy.includes(input);
+        
+        row.style.display = shouldShow ? '' : 'none';
+        if (shouldShow) visibleCount++;
     });
+    
+    // Update no results display
+    const noResults = document.getElementById('policy-no-results');
+    const table = document.getElementById('policies-table');
+    if (visibleCount === 0) {
+        table.style.display = 'none';
+        noResults.style.display = 'block';
+    } else {
+        table.style.display = 'table';
+        noResults.style.display = 'none';
+    }
 }
 function toggleAllPolicies(source) {
     document.querySelectorAll('input[name="policy_bulk"]').forEach(cb => cb.checked = source.checked);
@@ -670,13 +829,8 @@ function openPolicyModal() {
         </form>`);
     document.getElementById('add-policy-form').onsubmit = function(e) {
         e.preventDefault();
-        // POST form-encoded to the server route which expects form data
-        // POST form-encoded to the server route which expects form data
         fetch('/admin/add_policy', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ file: this.file.value, policy: this.policy.value }).toString()
-        }).then(() => window.location.reload()).catch(() => alert('Error adding policy'));
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({ file: this.file.value, policy: this.policy.value }).toString()
         }).then(() => window.location.reload()).catch(() => alert('Error adding policy'));
@@ -689,7 +843,7 @@ function openEditPolicyModal(file, policy, key) {
     let buttons = '';
     allAttributes.forEach(attr => {
         const selected = selectedAttrs.includes(attr) ? 'selected' : '';
-        buttons += `<button type='button' class='attr-btn px-3 py-2 rounded-full mr-2 mb-2 ${selected ? 'bg-notion-accent text-white' : 'bg-notion-card text-notion-text-secondary'}' data-attr='${attr.replace(/'/g, "&#39;")}' aria-pressed='${selected ? 'true' : 'false'}'>${attr}</button>`;
+        buttons += `<button type='button' class='attr-btn px-2 py-1 text-xs rounded-full mr-2 mb-2 ${selected ? 'bg-notion-accent/20 text-notion-accent' : 'bg-notion-card text-notion-text-secondary'}' data-attr='${attr.replace(/'/g, "&#39;")}' aria-pressed='${selected ? 'true' : 'false'}'>${attr}</button>`;
     });
     showModal(`<h3 class='text-lg font-bold mb-2'>Edit Policy</h3>
         <form id='edit-policy-form'>
@@ -700,16 +854,16 @@ function openEditPolicyModal(file, policy, key) {
     // Toggle button selection
     document.querySelectorAll('.attr-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            this.classList.toggle('bg-notion-accent');
-            this.classList.toggle('text-white');
+            this.classList.toggle('bg-notion-accent/20');
+            this.classList.toggle('text-notion-accent');
             this.classList.toggle('bg-notion-card');
             this.classList.toggle('text-notion-text-secondary');
-            this.setAttribute('aria-pressed', this.classList.contains('bg-notion-accent') ? 'true' : 'false');
+            this.setAttribute('aria-pressed', this.classList.contains('bg-notion-accent/20') ? 'true' : 'false');
         });
     });
     document.getElementById('edit-policy-form').onsubmit = function(e) {
         e.preventDefault();
-        const selected = Array.from(document.querySelectorAll('#policy-btn-group .attr-btn.bg-notion-accent')).map(btn => btn.getAttribute('data-attr'));
+        const selected = Array.from(document.querySelectorAll('#policy-btn-group .attr-btn.bg-notion-accent\\/20')).map(btn => btn.getAttribute('data-attr'));
         // POST to the server route that accepts the filename in the URL
         const target = '/admin/edit_policy/' + encodeURIComponent(this.file.value);
         const form = this;
@@ -761,6 +915,7 @@ function filterAuditLogs() {
     const to = document.getElementById('audit-to').value;
     const rows = document.querySelectorAll('#audit-tbody tr');
     let shown = 0;
+    
     rows.forEach(row => {
         const timeCell = row.children[0];
         if (!timeCell) return;
@@ -768,6 +923,7 @@ function filterAuditLogs() {
         // Parse as YYYY-MM-DD HH:MM:SS
         const date = new Date(timeStr.replace(' ', 'T'));
         let show = true;
+        
         if (from) {
             const fromDate = new Date(from);
             if (date < fromDate) show = false;
@@ -778,27 +934,81 @@ function filterAuditLogs() {
             toDate.setDate(toDate.getDate() + 1);
             if (date >= toDate) show = false;
         }
+        
         row.style.display = show ? '' : 'none';
         if (show) shown++;
     });
-    document.getElementById('log-no-results').style.display = shown ? 'none' : '';
+    
+    const noResults = document.getElementById('log-no-results');
+    if (noResults) {
+        noResults.style.display = shown ? 'none' : 'block';
+    }
 }
-// Small toast helper (uses Tailwind classes)
-function showToast(message, type='success') {
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // ESC to close modal
+    if (e.key === 'Escape') {
+        closeModal();
+    }
+    
+    // Ctrl/Cmd + K to focus search
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        const userSearch = document.getElementById('user-search');
+        if (userSearch) {
+            userSearch.focus();
+        }
+    }
+});
+// Enhanced toast helper with better positioning and animations
+function showToast(message, type = 'success') {
     const root = document.getElementById('toast-root');
     if (!root) return;
-    const color = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+    
+    const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        warning: 'bg-yellow-500',
+        info: 'bg-blue-500'
+    };
+    
+    const icons = {
+        success: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>',
+        error: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>',
+        warning: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
+        info: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>'
+    };
+    
+    const color = colors[type] || colors.success;
+    const icon = icons[type] || icons.success;
+    
     const toast = document.createElement('div');
-    toast.className = `pointer-events-auto max-w-sm w-full rounded-lg px-4 py-2 text-white shadow-lg transform transition-all duration-300 ${color} opacity-95`;
-    toast.style.boxShadow = '0 6px 18px rgba(0,0,0,0.3)';
-    toast.textContent = message;
+    toast.className = `pointer-events-auto max-w-sm w-full rounded-lg px-4 py-3 text-white shadow-lg transform transition-all duration-300 ${color} opacity-0 translate-y-2 flex items-center space-x-2`;
+    toast.style.boxShadow = '0 10px 25px rgba(0,0,0,0.3)';
+    
+    toast.innerHTML = `
+        <div class="flex-shrink-0">${icon}</div>
+        <div class="flex-1 text-sm font-medium">${message}</div>
+        <button onclick="this.parentElement.remove()" class="flex-shrink-0 ml-2 text-white/80 hover:text-white">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+        </button>
+    `;
+    
     root.appendChild(toast);
-    // auto-dismiss
+    
+    // Trigger animation
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    }, 10);
+    
+    // Auto-dismiss after 4 seconds
     setTimeout(() => {
         toast.style.opacity = '0';
-        toast.style.transform = 'translateY(8px)';
+        toast.style.transform = 'translateY(-8px)';
         setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    }, 4000);
 }
 
 // Attach event listeners for policy and user links. Use a setup function so it runs even
@@ -832,10 +1042,18 @@ function setupAdminLinks() {
 }
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupAdminLinks);
+    document.addEventListener('DOMContentLoaded', function() {
+        setupAdminLinks();
+        // Initialize status indicators
+        filterUsers();
+        filterPolicies();
+    });
 } else {
     // DOM already ready — run immediately
     setupAdminLinks();
+    // Initialize status indicators
+    filterUsers();
+    filterPolicies();
 }
 function previewPolicyAccess(file) {
     showModal(`<h3 class='text-lg font-bold mb-2'>Preview Access</h3><div>Users who match policy for <b>${file}</b> (not implemented)</div>`);
