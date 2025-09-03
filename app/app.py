@@ -2,6 +2,7 @@ from flask import Flask, request, send_file, render_template, redirect, url_for,
 from .attribute_management import attribute_bp
 import socket
 from flask_cors import CORS
+from flask_socketio import SocketIO, emit, join_room, leave_room
 from .crypto import aes, abe_simulator as abe
 import os, json
 from datetime import datetime
@@ -19,6 +20,7 @@ USER_KEYS_DIR = os.path.join(BASE_DIR, 'user_keys')
 app = Flask(__name__, template_folder=TEMPLATES_DIR, static_folder=STATIC_DIR)
 app.secret_key = 'kosh-secret-key'
 CORS(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(USER_KEYS_DIR, exist_ok=True)
@@ -56,6 +58,63 @@ def log_audit(user, action, details=None, ip=None):
             f.write(json.dumps(entry) + '\n')
     except Exception:
         pass
+
+def get_user_files(user_id):
+    """Get list of files accessible to a user"""
+    policies = safe_load_json(POLICIES_FILE, {})
+    user_files = []
+    is_admin = (user_id == 'admin')
+    
+    if is_admin:
+        # Admin sees all files
+        for fname, policy in policies.items():
+            if isinstance(policy, dict):
+                sender = policy.get('sender')
+            else:
+                sender = None
+            user_files.append({
+                'filename': fname, 
+                'sender': sender,
+                'is_owner': True  # Admin can delete any file
+            })
+    else:
+        for fname, policy in policies.items():
+            if isinstance(policy, dict):
+                access_policy = policy.get('policy')
+                sender = policy.get('sender')
+            else:
+                access_policy = policy
+                sender = None
+
+            # Check if user is the owner
+            is_owner = (sender == user_id)
+            
+            # If user is owner, they can always access their file
+            has_access = is_owner
+            
+            # If not owner, check access policy
+            if not has_access:
+                # Normalize access_policy into a list of attributes
+                if isinstance(access_policy, str):
+                    required_attrs = [a.strip() for a in access_policy.split(',') if a.strip()]
+                elif isinstance(access_policy, list):
+                    required_attrs = access_policy
+                else:
+                    required_attrs = []
+
+                try:
+                    has_access = abe.check_access(user_id, required_attrs)
+                except Exception:
+                    has_access = False
+            
+            if has_access:
+                user_files.append({
+                    'filename': fname, 
+                    'sender': sender,
+                    'is_owner': is_owner
+                })
+    
+    return user_files
 
 
 def parse_and_validate_attrs(raw):
@@ -156,61 +215,10 @@ def dashboard():
     user_id = session.get('user_id')
     if not user_id:
         return redirect(url_for('home'))
-    # Load policies and filter files based on attribute-based access control.
-    policies = safe_load_json(POLICIES_FILE, {})
+    
+    # Get user files using the helper function
+    user_files = get_user_files(user_id)
 
-    user_files = []
-    is_admin = (user_id == 'admin')
-    if is_admin:
-        # Admin sees all files
-        for fname, policy in policies.items():
-            if isinstance(policy, dict):
-                sender = policy.get('sender')
-            else:
-                sender = None
-            user_files.append({
-                'filename': fname, 
-                'sender': sender,
-                'is_owner': True  # Admin can delete any file
-            })
-    else:
-        for fname, policy in policies.items():
-            if isinstance(policy, dict):
-                access_policy = policy.get('policy')
-                sender = policy.get('sender')
-            else:
-                access_policy = policy
-                sender = None
-
-            # Check if user is the owner
-            is_owner = (sender == user_id)
-            
-            # If user is owner, they can always access their file
-            has_access = is_owner
-            
-            # If not owner, check access policy
-            if not has_access:
-                # Normalize access_policy into a list of attributes
-                if isinstance(access_policy, str):
-                    required_attrs = [a.strip() for a in access_policy.split(',') if a.strip()]
-                elif isinstance(access_policy, list):
-                    required_attrs = access_policy
-                else:
-                    required_attrs = []
-
-                try:
-                    has_access = abe.check_access(user_id, required_attrs)
-                except Exception:
-                    has_access = False
-            
-            if has_access:
-                user_files.append({
-                    'filename': fname, 
-                    'sender': sender,
-                    'is_owner': is_owner
-                })
-
-    # Get local IP address for share info
     # Get local IP address for share info
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -252,6 +260,16 @@ def dashboard():
             all_attributes.add(a)
     all_attributes = sorted(list(all_attributes))
     return render_template('dashboard.html', user_id=user_id, files=user_files, server_ip=server_ip, all_attributes=all_attributes)
+
+# API endpoint to get updated file list
+@app.route('/api/files')
+def api_files():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    user_files = get_user_files(user_id)
+    return jsonify({'files': user_files})
 
 # Route for changing password
 @app.route('/change_password', methods=['POST'])
@@ -301,6 +319,12 @@ def upload():
 
     with open(POLICIES_FILE, 'w') as f:
         json.dump(policies, f)
+
+    # Broadcast file update to all connected dashboard users
+    socketio.emit('file_uploaded', {
+        'uploader': session['user_id'],
+        'files': uploaded_files
+    }, room='dashboard_updates')
 
     return jsonify(success=True, filenames=uploaded_files)
 
@@ -696,6 +720,13 @@ def admin_delete_policy_ajax():
         with open(POLICIES_FILE, 'w') as f:
             json.dump(policies, f, indent=2)
         log_audit(session.get('user_id'), 'delete_policy', details=f'Deleted policy for file {filename}', ip=request.remote_addr)
+        
+        # Broadcast policy deletion - this affects file visibility
+        socketio.emit('file_deleted', {
+            'deleter': session.get('user_id'),
+            'filename': filename
+        }, room='dashboard_updates')
+        
     except Exception as e:
         return jsonify(success=False, error=f'could not update policies: {e}'), 500
     return jsonify(success=True)
@@ -748,6 +779,12 @@ def delete_file():
         except Exception as e:
             return jsonify(success=False, error=f'could not update policies: {e}'), 500
 
+    # Broadcast file deletion to all connected dashboard users
+    socketio.emit('file_deleted', {
+        'deleter': user_id,
+        'filename': filename
+    }, room='dashboard_updates')
+
     return jsonify(success=True)
 
 # AJAX endpoint: delete an uploaded file and its policy (admin only)
@@ -783,6 +820,12 @@ def admin_delete_file():
                 json.dump(policies, f, indent=2)
         except Exception as e:
             return jsonify(success=False, error=f'could not update policies: {e}'), 500
+
+    # Broadcast file deletion to all connected dashboard users
+    socketio.emit('file_deleted', {
+        'deleter': session.get('user_id'),
+        'filename': filename
+    }, room='dashboard_updates')
 
     return jsonify(success=True)
 
@@ -883,5 +926,32 @@ def admin_bulk_set_attrs():
 
     return jsonify(success=True)
 
+# WebSocket event handlers
+@socketio.on('connect')
+def handle_connect():
+    user_id = session.get('user_id')
+    if user_id:
+        join_room(f'user_{user_id}')
+        emit('connected', {'message': f'Connected as {user_id}'})
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    user_id = session.get('user_id')
+    if user_id:
+        leave_room(f'user_{user_id}')
+
+@socketio.on('join_dashboard')
+def handle_join_dashboard():
+    user_id = session.get('user_id')
+    if user_id:
+        join_room('dashboard_updates')
+        emit('joined_dashboard', {'message': 'Joined dashboard updates'})
+
+@socketio.on('leave_dashboard')
+def handle_leave_dashboard():
+    user_id = session.get('user_id')
+    if user_id:
+        leave_room('dashboard_updates')
+
 if __name__ == '__main__':
-    app.run(debug=True, port=7130, host="0.0.0.0")
+    socketio.run(app, debug=True, port=7130, host="0.0.0.0")
