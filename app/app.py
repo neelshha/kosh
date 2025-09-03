@@ -56,6 +56,9 @@ def log_audit(user, action, details=None, ip=None):
     try:
         with open(AUDIT_LOG_FILE, 'a') as f:
             f.write(json.dumps(entry) + '\n')
+        
+        # Emit real-time audit log update to admin dashboard
+        socketio.emit('audit_log_added', entry, room='admin_updates')
     except Exception:
         pass
 
@@ -519,6 +522,12 @@ def admin_add_user():
                     details=f'Added user {user_id} with attributes: {attributes}',
                     ip=request.remote_addr
                 )
+                # Emit real-time update to admin dashboard
+                socketio.emit('user_added', {
+                    'user': user_id,
+                    'attributes': attributes,
+                    'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                }, room='admin_updates')
         except Exception as e:
             if is_ajax:
                 return jsonify(success=False, error=f'could not save user: {e}'), 500
@@ -576,6 +585,13 @@ def admin_edit_user(user_id):
                 details=f'Changed attributes for user {user_id} from {old_attrs} to {attributes}',
                 ip=request.remote_addr
             )
+            # Emit real-time update to admin dashboard
+            socketio.emit('user_updated', {
+                'user': user_id,
+                'attributes': attributes,
+                'old_attributes': old_attrs,
+                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }, room='admin_updates')
         except Exception:
             if is_ajax:
                 return jsonify(success=False, error='Could not save user'), 500
@@ -622,6 +638,12 @@ def admin_add_policy():
         with open(POLICIES_FILE, 'w') as f:
             json.dump(policies, f, indent=2)
         log_audit(session.get('user_id'), 'add_policy', details=f'Added policy for file {file}: {policy}', ip=request.remote_addr)
+        # Emit real-time update to admin dashboard
+        socketio.emit('policy_added', {
+            'file': file,
+            'policy': policy,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }, room='admin_updates')
         return redirect(url_for('admin_dashboard'))
     else:
         return render_template('admin_add_policy.html')
@@ -654,6 +676,13 @@ def admin_edit_policy(file):
                 details=f'Edited policy for file {file} from {old_policy} to {policy}',
                 ip=request.remote_addr
             )
+            # Emit real-time update to admin dashboard
+            socketio.emit('policy_updated', {
+                'file': file,
+                'policy': policy,
+                'old_policy': old_policy,
+                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }, room='admin_updates')
         except Exception:
             if is_ajax:
                 return jsonify(success=False, error='Could not save policy'), 500
@@ -693,10 +722,24 @@ def admin_delete_user_ajax():
             users = json.load(f)
     except Exception:
         users = {}
+    
+    deleted_user_data = users.get(user)
     users.pop(user, None)
+    
     try:
         with open(USERS_FILE, 'w') as f:
             json.dump(users, f, indent=2)
+        log_audit(
+            session.get('user_id'),
+            'delete_user',
+            details=f'Deleted user {user}',
+            ip=request.remote_addr
+        )
+        # Emit real-time update to admin dashboard
+        socketio.emit('user_deleted', {
+            'user': user,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }, room='admin_updates')
     except Exception as e:
         return jsonify(success=False, error=f'could not update users: {e}'), 500
     return jsonify(success=True)
@@ -720,6 +763,12 @@ def admin_delete_policy_ajax():
         with open(POLICIES_FILE, 'w') as f:
             json.dump(policies, f, indent=2)
         log_audit(session.get('user_id'), 'delete_policy', details=f'Deleted policy for file {filename}', ip=request.remote_addr)
+        
+        # Emit real-time update to admin dashboard
+        socketio.emit('policy_deleted', {
+            'file': filename,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }, room='admin_updates')
         
         # Broadcast policy deletion - this affects file visibility
         socketio.emit('file_deleted', {
@@ -852,6 +901,22 @@ def admin_bulk_delete_users():
     try:
         with open(USERS_FILE, 'w') as f:
             json.dump(users, f, indent=2)
+        
+        # Log audit for each deleted user
+        for u in users_to_delete:
+            log_audit(
+                session.get('user_id'),
+                'bulk_delete_user',
+                details=f'Bulk deleted user {u}',
+                ip=request.remote_addr
+            )
+        
+        # Emit real-time update to admin dashboard
+        socketio.emit('users_bulk_deleted', {
+            'users': users_to_delete,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }, room='admin_updates')
+        
     except Exception as e:
         return jsonify(success=False, error=f'could not update users: {e}'), 500
 
@@ -880,6 +945,22 @@ def admin_bulk_delete_policies():
     try:
         with open(POLICIES_FILE, 'w') as f:
             json.dump(policies, f, indent=2)
+        
+        # Log audit for each deleted policy
+        for fname in files_to_delete:
+            log_audit(
+                session.get('user_id'),
+                'bulk_delete_policy',
+                details=f'Bulk deleted policy for file {fname}',
+                ip=request.remote_addr
+            )
+        
+        # Emit real-time update to admin dashboard
+        socketio.emit('policies_bulk_deleted', {
+            'files': files_to_delete,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }, room='admin_updates')
+        
     except Exception as e:
         return jsonify(success=False, error=f'could not update policies: {e}'), 500
 
@@ -921,6 +1002,14 @@ def admin_bulk_set_attrs():
     try:
         with open(USERS_FILE, 'w') as f:
             json.dump(users, f, indent=2)
+        
+        # Emit real-time update to admin dashboard
+        socketio.emit('users_bulk_attrs_updated', {
+            'users': users_to_update,
+            'attributes': attrs_list,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }, room='admin_updates')
+        
     except Exception as e:
         return jsonify(success=False, error=f'could not update users: {e}'), 500
 
@@ -952,6 +1041,19 @@ def handle_leave_dashboard():
     user_id = session.get('user_id')
     if user_id:
         leave_room('dashboard_updates')
+
+@socketio.on('join_admin')
+def handle_join_admin():
+    user_id = session.get('user_id')
+    if user_id == 'admin':
+        join_room('admin_updates')
+        emit('joined_admin', {'message': 'Joined admin updates'})
+
+@socketio.on('leave_admin')
+def handle_leave_admin():
+    user_id = session.get('user_id')
+    if user_id == 'admin':
+        leave_room('admin_updates')
 
 if __name__ == '__main__':
     socketio.run(app, debug=True, port=7130, host="0.0.0.0")

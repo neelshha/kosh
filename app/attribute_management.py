@@ -1,5 +1,6 @@
 import os, json
 from flask import Blueprint, request, session, jsonify
+from datetime import datetime
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')  # Go up one level to project root
 USERS_FILE = os.path.join(DATA_DIR, 'users.json')
@@ -36,6 +37,16 @@ def add_attribute():
         return jsonify(success=False, error='Attribute already exists'), 400
     attrs.append(attr)
     save_all_attributes(attrs)
+    
+    # Import socketio from current module
+    from flask import current_app
+    socketio = current_app.extensions.get('socketio')
+    if socketio:
+        socketio.emit('attribute_added', {
+            'attribute': attr,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }, room='admin_updates')
+    
     return jsonify(success=True)
 
 @attribute_bp.route('/admin/remove_attribute', methods=['POST'])
@@ -70,6 +81,16 @@ def remove_attribute():
     try:
         attrs.remove(attr)
         save_all_attributes(attrs)
+        
+        # Import socketio from current module
+        from flask import current_app
+        socketio = current_app.extensions.get('socketio')
+        if socketio:
+            socketio.emit('attribute_removed', {
+                'attribute': attr,
+                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }, room='admin_updates')
+        
         return jsonify(success=True)
     except Exception as e:
         return jsonify(success=False, error=f'Exception: {e}')
