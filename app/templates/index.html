@@ -20,6 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -144,10 +145,8 @@
                         >
                     </div>
                     <button type="submit" class="btn-primary w-full py-3 rounded-lg text-white font-semibold text-base flex items-center justify-center space-x-2 transition-colors duration-150">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                        </svg>
                         <span>Sign In</span>
+                        <i data-lucide="log-in" class="w-5 h-5"></i>
                     </button>
                 </form>
                 <div class="mt-8 pt-6 border-t border-notion-border text-center">
@@ -163,6 +162,9 @@
         // Auto-focus on the user ID input
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('user_id').focus();
+            
+            // Initialize Lucide icons
+            lucide.createIcons();
         });
 
         // Form submission feedback
@@ -171,12 +173,13 @@
             const originalText = button.innerHTML;
             
             button.innerHTML = `
-                <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                </svg>
+                <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
                 <span>Signing in...</span>
             `;
             button.disabled = true;
+            
+            // Re-initialize Lucide icons for the new content
+            lucide.createIcons();
         });
     </script>
 </body>
