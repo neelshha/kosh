@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kosh - Secure File Encryption</title>
+    
+     <!-- Favicon and Web App Manifest -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/static/android-chrome-512x512.png">
+    <link rel="manifest" href="/static/site.webmanifest">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'notion-bg': '#0f0f0f',
+                        'notion-card': '#1a1a1a',
+                        'notion-border': '#2a2a2a',
+                        'notion-text': '#f1f1f1',
+                        'notion-text-secondary': '#9ca3af',
+                        'notion-accent': '#1e90ff',
+                        'notion-accent-hover': '#0066cc',
+                        'notion-input': '#2a2a2a',
+                        'notion-hover': '#252525'
+                    },
+                    fontFamily: {
+                        'title': ['Space Grotesk', 'sans-serif'],
+                        'content': ['Sora', 'sans-serif']
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                        'slide-up': 'slideUp 0.8s ease-out',
+                        'scale-in': 'scaleIn 0.4s ease-out'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            font-family: 'Sora', sans-serif;
+        }
+        
+        h1, h2, h3, h4, h5, h6, .title-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .notion-shadow {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .notion-shadow-hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        input:focus {
+            outline: 2px solid #1e90ff;
+            outline-offset: 2px;
+            border-color: #1e90ff;
+        }
+        
+        .btn-primary {
+            background: #1e90ff;
+        }
+        
+        .btn-primary:hover {
+            background: #0066cc;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, rgba(30, 144, 255, 0.1) 0%, rgba(30, 144, 255, 0.05) 100%);
+        }
+    </style>
+</head>
+<body class="bg-notion-bg text-notion-text font-content min-h-screen">
+    <!-- Two-Column Split Landing Section -->
+    <div class="min-h-screen flex flex-col md:flex-row items-stretch bg-notion-bg px-0 py-0">
+        <!-- Left Side: Branding & Info -->
+        <div class="md:w-1/2 flex flex-col justify-center items-center bg-notion-card border-r border-notion-border px-10 py-16 animate-fade-in">
+            <img src="/static/android-chrome-512x512.png" alt="Kosh Logo" class="w-40 h-40 rounded-3xl mb-10 shadow-2xl">
+            <h1 class="text-8xl font-extrabold text-notion-text font-title tracking-tight mb-6 text-center">Kosh</h1>
+            <span class="text-3xl text-notion-accent font-title font-semibold tracking-wide mb-8 text-center">Secure File Encryption</span>
+            <!-- Description removed for cleaner look -->
+            <div class="hidden md:block mt-10 text-center">
+                <span class="text-notion-text-secondary text-sm">Your privacy, our priority.</span>
+            </div>
+        </div>
+
+        <!-- Right Side: Login Form -->
+        <div class="md:w-1/2 flex flex-col justify-center items-center px-6 py-16 animate-slide-up">
+            <div class="w-full max-w-md bg-notion-card border border-notion-border rounded-2xl shadow-xl p-10">
+                <h2 class="text-2xl font-bold text-notion-text font-title mb-2 text-center">Sign In</h2>
+                <p class="text-notion-text-secondary text-center mb-6">Access your encrypted files</p>
+                <form action="/login" method="POST" class="space-y-6">
+                    <div>
+                        <label for="user_id" class="block text-sm font-medium text-notion-text mb-2">User ID</label>
+                        <input 
+                            type="text" 
+                            class="w-full px-4 py-3 bg-notion-input border border-notion-border rounded-lg text-notion-text placeholder-notion-text-secondary focus:outline-none focus:border-notion-accent transition-colors text-base" 
+                            name="user_id" 
+                            id="user_id"
+                            required 
+                            placeholder="Enter your user ID"
+                            autocomplete="username"
+                        >
+                    </div>
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-notion-text mb-2">Password</label>
+                        <input 
+                            type="password" 
+                            class="w-full px-4 py-3 bg-notion-input border border-notion-border rounded-lg text-notion-text placeholder-notion-text-secondary focus:outline-none focus:border-notion-accent transition-colors text-base" 
+                            name="password" 
+                            id="password"
+                            required 
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                        >
+                    </div>
+                    <button type="submit" class="btn-primary w-full py-3 rounded-lg text-white font-semibold text-base flex items-center justify-center space-x-2 transition-colors duration-150">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        <span>Sign In</span>
+                    </button>
+                </form>
+                <div class="mt-8 pt-6 border-t border-notion-border text-center">
+                    <p class="text-sm text-notion-text-secondary">
+                        New to Kosh? Contact your administrator for access.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-focus on the user ID input
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('user_id').focus();
+        });
+
+        // Form submission feedback
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const button = e.target.querySelector('button[type="submit"]');
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = `
+                <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                <span>Signing in...</span>
+            `;
+            button.disabled = true;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+.venv/
+env/
+ENV/
+venv/
+
+# Secret keys and sensitive data
+data/*.key
+data/policies.json
+data/users.json
+data/attributes.json
+data/audit_logs.jsonl
+app/user_keys/*.json
+data/users.json
+data/attributes.json
+data/audit_logs.jsonl
+
+# Encrypted files and private keys
+app/uploads/
+app/user_keys/*_privkey.json
+app/user_keys/master_key.json
+
+# VSCode and OS-specific files
+.vscode/
+*.DS_Store
+Thumbs.db
+
+# Logs or temporary files (if any)
+*.log
+*.tmp
+
+# PyInstaller
+*.spec
+dist/
+build/
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# Environment variables
+.env
