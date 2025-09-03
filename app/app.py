@@ -1055,5 +1055,6 @@ def handle_leave_admin():
     if user_id == 'admin':
         leave_room('admin_updates')
 
+
 if __name__ == '__main__':
     socketio.run(app, debug=True, port=7130, host="0.0.0.0")
