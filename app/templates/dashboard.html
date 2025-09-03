@@ -623,7 +623,7 @@
             .then(data => {
                 if (data.success) {
                     showNotification(`File "${filename.replace('.enc', '')}" deleted successfully`, 'success');
-                    // File list will be updated via Socket.IO event
+
                 } else {
                     showNotification(`Error deleting file: ${data.error}`, 'error');
                 }
@@ -1030,7 +1030,9 @@
                     uploadBtn.innerHTML = '<i data-lucide="upload" class="w-4 h-4"></i><span>Upload file</span>';
                     // Reinitialize Lucide icons
                     lucide.createIcons();
+
                     showNotification('Upload timed out. Please try again.', 'error');
+
                     setTimeout(() => { progressContainer.style.display = 'none'; }, 2000);
                 };
 

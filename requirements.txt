@@ -1,4 +1,4 @@
-Flask==3.0.0
-flask-cors==6.0.0
-cryptography==42.0.5
 flask-socketio==5.3.6
+Flask==3.1.2
+flask-cors==6.0.1
+cryptography==45.0.7
