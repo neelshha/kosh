@@ -299,7 +299,7 @@
                                         <i data-lucide="upload" class="w-12 h-12 text-notion-text-secondary mx-auto"></i>
                                     </div>
                                     <div class="text-notion-text mb-2 font-medium">Click to upload or drag and drop</div>
-                                    <div class="text-notion-text-secondary text-sm">You can select multiple files (max depends on server configuration)</div>
+                                    <div class="text-notion-text-secondary text-sm">You can select multiple files (no size restrictions)</div>
                                 </label>
 
                                 <!-- Accessible file list (populated by JS) -->
@@ -539,8 +539,7 @@
             }
 
             function validateFiles(files) {
-                const maxFileSize = 100 * 1024 * 1024; // 100MB per file
-                const maxTotalSize = 500 * 1024 * 1024; // 500MB total
+                // File sharing limits removed - no size restrictions
                 let totalSize = 0;
                 const invalidFiles = [];
 
@@ -548,17 +547,13 @@
                     const file = files[i];
                     totalSize += file.size;
                     
-                    if (file.size > maxFileSize) {
-                        invalidFiles.push(`${file.name} (${formatSize(file.size)}) exceeds 100MB limit`);
-                    }
+                    // No file size validation - all files are allowed
                 }
 
-                if (totalSize > maxTotalSize) {
-                    invalidFiles.push(`Total size (${formatSize(totalSize)}) exceeds 500MB limit`);
-                }
+                // No total size validation - unlimited total size
 
                 return {
-                    valid: invalidFiles.length === 0,
+                    valid: true, // Always valid since no limits are enforced
                     errors: invalidFiles,
                     totalSize: totalSize
                 };
@@ -900,7 +895,7 @@
                     uploadBtn.innerHTML = '<i data-lucide="upload" class="w-4 h-4"></i><span>Upload file</span>';
                     // Reinitialize Lucide icons
                     lucide.createIcons();
-                    showNotification('Upload timed out. Please try again with smaller files.', 'error');
+                    showNotification('Upload timed out. Please try again.', 'error');
                     setTimeout(() => { progressContainer.style.display = 'none'; }, 2000);
                 };
 
