@@ -59,9 +59,11 @@ def log_audit(user, action, details=None, ip=None):
         
         # Emit real-time audit log update to admin dashboard
         socketio.emit('audit_log_added', entry, room='admin_updates')
+
     except Exception as e:
         # Log to console if audit logging fails
         print(f"Audit logging failed: {e}")
+
 
 def get_user_files(user_id):
     """Get list of files accessible to a user"""

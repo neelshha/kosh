@@ -49,13 +49,5 @@
       "year4"
     ],
     "password": "pass"
-  },
-  "aadya": {
-    "attributes": [
-      "student",
-      "year4",
-      "batch1"
-    ],
-    "password": "pass"
   }
 }

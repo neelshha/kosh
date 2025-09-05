@@ -83,7 +83,6 @@ class UserManager {
 
             const result = await response.json();
             if (result.success) {
-                // Users will be removed from table via socket event
                 toastManager.show(`${selected.length} users deleted`, 'success');
                 this.filter(); // Update count
             } else {
@@ -147,7 +146,6 @@ class UserManager {
 
             const data = await response.json().catch(() => ({}));
             if (data?.success) {
-                // Users will be updated in table via socket event
                 modalManager.close();
                 toastManager.show('Attributes updated', 'success');
             } else {
@@ -212,7 +210,6 @@ class UserManager {
 
             const data = await response.json().catch(() => ({}));
             if (data?.success) {
-                // User will be added to table via socket event
                 modalManager.close();
                 toastManager.show('User added', 'success');
             } else {
@@ -222,8 +219,6 @@ class UserManager {
             toastManager.show('Network error', 'error');
         }
     }
-
-
 
     /**
      * Open edit user modal
@@ -304,7 +299,6 @@ class UserManager {
 
             const data = await response.json().catch(() => ({}));
             if (data?.success) {
-                // User will be updated in table via socket event
                 modalManager.close();
                 toastManager.show('User updated', 'success');
             } else {
@@ -314,8 +308,6 @@ class UserManager {
             modalManager.showInlineError(form, 'Network error');
         }
     }
-
-
 
     /**
      * Delete a user
@@ -333,7 +325,6 @@ class UserManager {
 
             const result = await response.json();
             if (result.success) {
-                // User will be removed from table via socket event
                 toastManager.show('User deleted', 'success');
                 this.filter(); // Update count
             } else {

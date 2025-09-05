@@ -201,7 +201,6 @@ class PolicyManager {
 
             const data = await response.json().catch(() => ({}));
             if (data?.success) {
-                // Policy will be updated in table via socket event
                 modalManager.close();
                 toastManager.show('Policy updated', 'success');
             } else {
@@ -212,8 +211,6 @@ class PolicyManager {
             modalManager.showInlineError(form, 'Network error');
         }
     }
-
-
 
     /**
      * Delete a policy
