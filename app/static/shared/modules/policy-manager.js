@@ -201,7 +201,7 @@ class PolicyManager {
 
             const data = await response.json().catch(() => ({}));
             if (data?.success) {
-                this.updateInTable(form.file.value, selected.join(', '));
+                // Policy will be updated in table via socket event
                 modalManager.close();
                 toastManager.show('Policy updated', 'success');
             } else {
@@ -213,23 +213,7 @@ class PolicyManager {
         }
     }
 
-    /**
-     * Update policy in table
-     * @param {string} fileName - Filename
-     * @param {string} policy - New policy
-     */
-    updateInTable(fileName, policy) {
-        const rows = document.querySelectorAll('#policies-table tbody tr');
-        rows.forEach(row => {
-            const input = row.querySelector('input[name="policy_bulk"]');
-            if (input && input.value === fileName) {
-                const policyCell = row.children[2];
-                if (policyCell) {
-                    policyCell.textContent = policy;
-                }
-            }
-        });
-    }
+
 
     /**
      * Delete a policy
